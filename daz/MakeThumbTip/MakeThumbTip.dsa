@@ -1,0 +1,220 @@
+// DAZ Studio version 4.12.1.118 filetype DAZ Script
+
+// DAZ Studio 4 script
+// Creates a thumbnail and/or a tooltip for the 
+//   selected item in the Content Library.
+
+// Written by cajhin
+// Inspired by butaixianran's Iray Thumbnail Creator
+// source master: https://github.com/cajhin/tools
+// License: I don't care. Do whatever you like with this.
+
+(function(){
+ 
+  ///YOU CAN EDIT THESE VALUES///
+  
+  //thumbnail shown in Content Library
+  var default_create_thumb=true;
+  var thumbnail_size=91;
+
+  //tooltip shown on mouse hover
+  var default_create_tooltip=true;
+  var tooltip_size=800;
+  
+  //crop Views and Tools (if render 'Active Viewport'), or the aspect frame
+  var crop_top=30;
+  var crop_right=30;
+  var crop_aspect_frame_pixels=5;
+  
+
+  ///NO MORE PARAMETERS BELOW///
+  //////////////////////////////////////////////////////////////////////////////
+
+  var version = 1;
+  
+  //is this check useful?
+  if( !MainWindow )
+  {
+  	MessageBox.critical("No MainWindow? Exiting...", "No MainWindow", "&Exit");
+  	return;
+  }
+  
+  //get all selected items
+  var libraryPane = MainWindow.getPaneMgr().findPane("DzContentLibraryPane");
+  if(!libraryPane) 
+  {
+	 MessageBox.critical("Cannot find Content Library Pane.", "No CL Pane", "&Exit");
+	 return;
+  }
+  
+  var assets = libraryPane.getSelectedAssets();
+  if (!assets || assets.length != 1) 
+  {
+     MessageBox.critical("No asset (or many) selected in the Content Library.\r\nSelect one and only one asset.", "Select 1 asset", "&Exit");
+     return;
+  }
+
+  var dufPath = assets[0].getAsLocalFile();
+  if (!dufPath.endsWith(".duf"))
+  {
+     MessageBox.critical("Only .duf files are supported", "Select a .duf file", "&Exit");
+     return;
+  }
+
+  // Calculate new paths
+  var thumbPath = dufPath+".png"
+  var tooltipPath = dufPath.replace(".duf",".tip.png");
+  if(tooltipPath.indexOf(".duf",0) >= 0) 
+  {
+    MessageBox.critical("File contains '.duf' twice:\r\n"+dufPath, "More than one '.duf' found.", "&Exit");
+    return;
+  }
+
+  // Get image from active viewport
+  var drawpanelImg = MainWindow.getViewportMgr().getActiveViewport()
+                      .get3DViewport().captureImage();
+
+  //check render aspect ratio
+  var renderAR=getRenderAspectRatio();
+
+  var squareImg=Image();
+  
+  if(renderAR == 0) //rendersetting "Active Viewport", no fixed aspect ratio
+  {
+    var wcrop=drawpanelImg.width - crop_right;
+    var hcrop=drawpanelImg.height - crop_top;
+    if(wcrop > hcrop)
+      squareImg=drawpanelImg.copy((wcrop-hcrop)/2,crop_top,hcrop,hcrop);
+    else
+      squareImg=drawpanelImg.copy(0,(drawpanelImg.height-drawpanelImg.width)/2,
+      	                             wcrop,wcrop);
+  }
+  else  //copy from inside the aspect ratio frame
+  {
+  	var drawAR = drawpanelImg.width / drawpanelImg.height;
+  	var sidelen = drawpanelImg.width / renderAR;
+  	if(renderAR < drawAR) //render aspect higher than draw panel aspect
+  	    sidelen = drawpanelImg.height * renderAR;
+	squareImg = drawpanelImg.copy(
+ 			(drawpanelImg.width - sidelen) /2 +crop_aspect_frame_pixels,
+ 			(drawpanelImg.height - sidelen) /2 +crop_aspect_frame_pixels,
+ 			sidelen - 2*crop_aspect_frame_pixels, 
+ 			sidelen - 2*crop_aspect_frame_pixels
+ 	);
+  }
+  
+  var thumbImg=squareImg.smoothScale(thumbnail_size,thumbnail_size);
+  var tooltipImg=squareImg.smoothScale(tooltip_size,tooltip_size);
+
+  //get old thumbnail. Could be file.duf.png or file.png
+  var oldImg = new Image();
+  if(DzFileInfo(dufPath+".png").exists())
+    oldImg=new Image(dufPath+".png");
+  else
+  {
+  	var testpath=dufPath.replace(".duf",".png");
+    if(DzFileInfo(testpath).exists())
+      oldImg=new Image(testpath);  
+  }
+    
+  //dialog	
+  var dlgResult=showDlg(oldImg, thumbImg, tooltipImg, default_create_thumb, 
+  	                default_create_tooltip, dufPath);
+
+  //save
+  if(dlgResult & 1)
+    thumbImg.save(thumbPath);
+  if(dlgResult & 2)
+    tooltipImg.save(tooltipPath);
+  
+  libraryPane.refresh();  //does not work? Manual refresh...
+  
+  return;
+  
+  
+  //returns the render setting aspect ratio,
+  //or 0 if "Active Viewport" is selected (no fixed AR)
+  function getRenderAspectRatio()
+  {
+    var renderOptions = App.getRenderMgr().getRenderOptions();
+    if( renderOptions.renderViewport )
+      return 0;
+    return renderOptions.aspect;
+  }
+
+  //Show dialog, return:
+  //0 - do nothing
+  //1 - do thumb
+  //2 - do tooltip
+  //3 - do both
+  function showDlg( oldImg, thumb_img, tooltip_img, default_thumb, default_tooltip, duf_path )
+  {
+	// Create a basic dialog
+	var wDlg = new DzBasicDialog();
+	// Get the wrapped widget for the dialog
+	var oDlgWgt = wDlg.getWidget();
+	wDlg.caption = "Make thumbnail and tooltip v"+version;
+	wDlg.showHelpButton(false);
+	var sKey = wDlg.caption.replace( / /g, "" ) + "Dlg";
+ 	oDlgWgt.objectName = sKey;
+
+    //.duf filename 
+ 	var wLabelFile = new DzLabel( wDlg );
+	wLabelFile.text = duf_path;
+	wDlg.addWidget( wLabelFile, 0, DzWidget.AlignLeft );
+	// Old image
+	var pixOldImg = new Pixmap();
+	pixOldImg.fromImage(oldImg);
+ 	var wLabelOldImg = new DzLabel( wDlg );
+	wLabelOldImg.pixmap = pixOldImg;
+	wDlg.addWidget( wLabelOldImg, 0, DzWidget.AlignLeft );
+    //New icons
+ 	var wLabelNewicons = new DzLabel( wDlg );
+	wLabelNewicons.text = "New thumbnail and tooltip:";
+	wDlg.addWidget( wLabelNewicons, 0, DzWidget.AlignLeft );
+	// Thumb image
+	var pixThumb = new Pixmap();
+	pixThumb.fromImage(thumb_img);
+ 	var wLabelThumb = new DzLabel( wDlg );
+	wLabelThumb.pixmap = pixThumb;
+	wDlg.addWidget( wLabelThumb, 0, DzWidget.AlignLeft );
+    // tooltip image
+ 	var pixTooltip = new Pixmap();
+	pixTooltip.fromImage(tooltip_img);
+ 	var wLabelTooltip = new DzLabel( wDlg );
+	wLabelTooltip.pixmap = pixTooltip;
+	wDlg.addWidget( wLabelTooltip, 0, DzWidget.AlignLeft );
+ 
+	// Get the minimum size of the dialog
+	var sizeHint = oDlgWgt.minimumSizeHint;
+	// Set the fixed size of the dialog
+	wDlg.setFixedSize( sizeHint.width, sizeHint.height );
+ 
+	// Set the text on the accept button
+	wDlg.setAcceptButtonText( "&Make now" );
+ 
+ 	var btnTooltip = new DzCheckBox( wDlg );
+	btnTooltip.getWidget().objectName = "btnTooltip";
+	btnTooltip.text = "Make Tooltip";
+	btnTooltip.checked = default_tooltip;
+	wDlg.addButton( btnTooltip );
+	
+ 	var btnThumb = new DzCheckBox( wDlg );
+	btnThumb.getWidget().objectName = "btnThumb";
+	btnThumb.text = "Make Thumb";
+	btnThumb.checked = default_thumb;
+	wDlg.addButton( btnThumb );
+	
+	// Display the dialog
+	var dlgres = wDlg.exec();
+	if(!dlgres)
+		return 0;
+	var select=0;
+	if(wDlg.findChildOfWidget("btnThumb").checked)
+	  select+=1;
+	if(wDlg.findChildOfWidget("btnTooltip").checked)
+	  select+=2;
+	return select;
+  }
+  
+})();
