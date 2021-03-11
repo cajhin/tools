@@ -1,0 +1,25 @@
+INSTALL
+1. copy MakeThumbTip.dsa and the .png into Documents\DAZ 3D\Studio\My Library\Scripts
+2. open DAZ Content Library; navigate to the scripts folder
+   (you may need to refresh the panel: right-click > refresh)
+3. right-click MakeThumbTip > Create Custom Action...
+   It should now be in Menu > Scripts
+   
+USE
+- pose your item in the Viewport
+  imagine a sqare in the middle of the Viewport; this will be the thumbnail.
+- select the item in the Content Library
+- click Menu > Scripts > MakeThumbTip
+  You now see:
+  - name of the .duf file (your item)
+  - the old thumbnail
+  - the new thumbnail
+  - the new tooltip
+- select if you want to create thumbnail and/or tooltip
+- click 'Make'
+- refresh the Content Library to see the new thumbnail
+
+OPTIONS
+in the first lines of the script, you can change:
+- the size of thumbnails and tooltips
+- the defaults for the two 'create' checkboxes
