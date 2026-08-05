@@ -86,6 +86,7 @@ input[type=number] {
   cursor: pointer;
   font-size: 13px;
   margin-left: 10px;
+  white-space: nowrap;
 }
 #reroll-btn:hover { background: #357abd; }
 
@@ -141,20 +142,25 @@ h1 {
 
 <div class="container">
 
-<h1>Heads or Tales, with a crooked coin (How to Gamble)</h1>
-<div class="subtitle">(maximizing gain when you have an edge better than 50:50 chance. A.k.a. the <a href="https://en.wikipedia.org/wiki/Kelly_criterion" target="_blank" rel="noopener">Kelly Criterion</a>)</div>
+<div style="display:flex; justify-content:flex-end; margin-bottom:4px;">
+  <div class="btn-group" id="lang-btns">
+    <button data-val="en" class="active">EN</button>
+    <button data-val="de">DE</button>
+  </div>
+</div>
+
+<h1 data-i18n="title">Heads or Tales, with a crooked coin (How to Gamble)</h1>
+<div class="subtitle" id="subtitle"></div>
 
 <!-- ── controls ── -->
 <div style="border:1px solid #d0d0d0; border-radius:5px; padding:2px 0; margin-bottom:3px;">
 <div class="row" style="height:auto; margin-bottom:6px;">
   <span class="lbl"></span>
-  <span style="color:#888; font-size:12px; max-width:620px; white-space:normal;">
-    How much better are your chances vs. true random? My best guess: 3% ~= stock market (you know it tends to go up). 12% = top informed trader. 60% (80:20) if you are Barron Frump and trade in oil.
-  </span>
+  <span data-i18n="edgeComment" style="color:#888; font-size:12px; max-width:620px; white-space:normal;"></span>
 </div>
 
 <div class="row">
-  <span class="lbl">Edge</span>
+  <span class="lbl" data-i18n="lblEdge">Edge</span>
   <input type="range" id="edge-sl" min="-100" max="100" step="0.01" value="3.00">
   <input type="number"  id="edge-num" min="-100" max="100" step="any" value="3.00">
   <span style="margin-left:4px; color:#555; white-space:nowrap">%</span>
@@ -162,28 +168,28 @@ h1 {
 </div>
 
 <div class="row">
-  <span class="lbl">Net odds b</span>
+  <span class="lbl" data-i18n="lblB">Net odds b</span>
   <input type="range" id="b-sl" min="0.1" max="5.0" step="0.01" value="1.0">
   <input type="number"  id="b-num" min="0.1" max="5.0" step="any" value="1.0">
-  <span style="margin-left:8px; color:#888; font-size:12px; white-space:nowrap">Payout if you win, relative to bet</span>
+  <span data-i18n="bAnnot" style="margin-left:8px; color:#888; font-size:12px; white-space:nowrap"></span>
 </div>
 
 <div class="row" style="margin-bottom:0">
   <span class="lbl"></span>
-  <button id="reroll-btn">Roll again</button>
-  <span style="margin-left:8px; color:#888; font-size:12px; white-space:nowrap">Required if you change edge or odds. Generates a new random coinflip series (if you don't like your destiny).</span>
+  <button id="reroll-btn" data-i18n="rerollBtn">Roll again</button>
+  <span data-i18n="rerollAnnot" style="margin-left:8px; color:#888; font-size:12px; white-space:nowrap"></span>
 </div>
 </div>
 
 <div style="border:1px solid #d0d0d0; border-radius:5px; padding:2px 0; margin-bottom:3px;">
 <div class="row">
-  <span class="lbl">Start capital</span>
+  <span class="lbl" data-i18n="lblCapital">Start capital</span>
   <input type="range" id="capital-sl" min="2" max="6" step="0.001" value="3">
   <input type="number" id="capital-num" min="100" max="1000000" step="any" value="1000">
 </div>
 
 <div class="row">
-  <span class="lbl" style="color:steelblue">Safe bet</span>
+  <span class="lbl" data-i18n="lblF1" style="color:steelblue">Safe bet</span>
   <input type="range" id="f1-sl" min="0" max="100" step="0.01" value="5">
   <input type="number" id="f1-num" min="0" max="100" step="any" value="5">
   <span style="margin-left:4px; color:#555; white-space:nowrap">%</span>
@@ -191,14 +197,14 @@ h1 {
 </div>
 
 <div class="row">
-  <span class="lbl" style="color:seagreen">Kelly</span>
+  <span class="lbl" data-i18n="lblKelly" style="color:seagreen">Kelly</span>
   <input type="range" id="kelly-sl" min="0" max="100" step="0.001" value="10" disabled>
   <span style="margin-left:4px; color:#555; white-space:nowrap">%</span>
   <span id="kelly-annot" style="margin-left:8px; color:#888; font-size:12px; white-space:nowrap">10.00 = (55%-45%) — bet 10.00% of bankroll every round</span>
 </div>
 
 <div class="row">
-  <span class="lbl" style="color:darkorange">Risky bet</span>
+  <span class="lbl" data-i18n="lblF2" style="color:darkorange">Risky bet</span>
   <input type="range" id="f2-sl" min="0" max="100" step="0.01" value="20">
   <input type="number" id="f2-num" min="0" max="100" step="any" value="20">
   <span style="margin-left:4px; color:#555; white-space:nowrap">%</span>
@@ -206,31 +212,31 @@ h1 {
 </div>
 
 <div class="row">
-  <span class="lbl" style="color:black">Fixed bet</span>
+  <span class="lbl" data-i18n="lblBet" style="color:black">Fixed bet</span>
   <input type="range" id="bet-sl" min="1" max="50" step="0.01" value="10">
   <input type="number" id="bet-num" min="1" max="50" step="any" value="10">
   <span id="bet-annot" style="margin-left:8px; color:#888; font-size:12px; white-space:nowrap">set $10 each round</span>
 </div>
 
 <div class="row" style="margin-bottom:0">
-  <span class="lbl">Fixed rate</span>
+  <span class="lbl" data-i18n="lblRate">Fixed rate</span>
   <input type="range" id="rate-sl" min="0" max="100" step="0.1" value="10">
   <input type="number" id="rate-num" min="0" max="100" step="any" value="10">
-  <span style="margin-left:4px; color:#555; white-space:nowrap">% per year</span>
-  <span style="margin-left:8px; color:#888; font-size:12px; white-space:nowrap">very roughly the stock market return rate</span>
+  <span data-i18n="rateUnit" style="margin-left:4px; color:#555; white-space:nowrap"></span>
+  <span data-i18n="rateAnnot" style="margin-left:8px; color:#888; font-size:12px; white-space:nowrap"></span>
 </div>
 </div>
 
 <div style="border:1px solid #d0d0d0; border-radius:5px; padding:2px 0; margin-bottom:3px;">
 <div class="row" style="height:auto; margin-bottom:2px;">
   <span class="lbl"></span>
-  <span style="color:#888; font-size:12px; white-space:nowrap">One Round is one coin flip; simulates one trade, or one day in the market</span>
+  <span data-i18n="roundDef" style="color:#888; font-size:12px; white-space:nowrap"></span>
 </div>
 <div class="row" style="margin-bottom:0">
-  <span class="lbl">Rounds</span>
+  <span class="lbl" data-i18n="lblRounds">Rounds</span>
   <input type="range" id="rounds-sl" min="0" max="1000" step="1" value="0">
   <input type="number" id="rounds-num" min="1" max="25200" step="1" value="1">
-  <span style="margin-left:8px; color:#888; font-size:12px; white-space:nowrap">Cursor-Right advances</span>
+  <span data-i18n="roundsAnnot" style="margin-left:8px; color:#888; font-size:12px; white-space:nowrap"></span>
 </div>
 <div class="row timespan-row" style="margin-bottom:0">
   <div class="spacer"></div>
@@ -242,14 +248,14 @@ h1 {
 
 <div class="bottom">
   <div class="log-row">
-    <span>Log scale</span>
+    <span data-i18n="logScaleLbl">Log scale</span>
     <div class="btn-group" id="log-btns">
-      <button data-val="on">On</button>
-      <button data-val="off">Off</button>
-      <button data-val="auto" class="active">Auto</button>
+      <button data-val="on" data-i18n="logOn">On</button>
+      <button data-val="off" data-i18n="logOff">Off</button>
+      <button data-val="auto" class="active" data-i18n="logAuto">Auto</button>
     </div>
   </div>
-  <label><input type="checkbox" id="wipeout-chk" checked> Wipeout at $1</label>
+  <label><input type="checkbox" id="wipeout-chk" checked> <span data-i18n="wipeoutLbl">Wipeout at $1</span></label>
 </div>
 
 </div>
@@ -265,6 +271,133 @@ const C = {
   safe:'steelblue', risky:'darkorange', kelly:'seagreen',
   flat:'black', win:'#2ca02c', loss:'#d62728', start:'#999', growth:'#bbb',
 };
+
+// ── i18n ─────────────────────────────────────────────────────────────────────
+let lang = localStorage.getItem('kellyLang') || 'en';
+
+const I18N = {
+  en: {
+    title: "Heads or Tales, with a crooked coin (How to Gamble)",
+    subtitlePre: "(maximizing gain when you have an edge better than 50:50 chance. A.k.a. the ",
+    subtitleLink: "Kelly Criterion",
+    subtitlePost: ")",
+    subtitleHref: "https://en.wikipedia.org/wiki/Kelly_criterion",
+    edgeComment: "How much better are your chances vs. true random? My best guess: 3% ~= stock market (you know it tends to go up). 12% = top informed trader. 60% (80:20) if you are Barron Frump and trade in oil.",
+    lblEdge: "Edge",
+    lblB: "Net odds b",
+    bAnnot: "Payout if you win, relative to bet",
+    rerollBtn: "Roll again",
+    rerollAnnot: "Required if you change edge or odds. Generates a new random coinflip series (if you don't like your destiny).",
+    lblCapital: "Start capital",
+    lblF1: "Safe bet",
+    lblKelly: "Kelly",
+    lblF2: "Risky bet",
+    lblBet: "Fixed bet",
+    lblRate: "Fixed rate",
+    rateUnit: "% per year",
+    rateAnnot: "very roughly the stock market return rate",
+    roundDef: "One Round is one coin flip; simulates one trade, or one day in the market",
+    lblRounds: "Rounds",
+    roundsAnnot: "Cursor-Right advances",
+    logScaleLbl: "Log scale",
+    logOn: "On",
+    logOff: "Off",
+    logAuto: "Auto",
+    wipeoutLbl: "Wipeout at $1",
+    betFracAnnot: pct => `bet ${pct.toFixed(2)}% of bankroll every round`,
+    betAmountAnnot: n => `set $${n} each round`,
+    edgeAnnot: (p, pWin, pLoss) => `p=${p.toFixed(3)} (${pWin.toFixed(1)} : ${pLoss.toFixed(1)} chance)`,
+    spanLabels: {'1d':'1d', Week:'Week', Month:'Month', Qtr:'Qtr', Year:'Year', '3y':'3y', '10y':'10y', '30y':'30y', '100y':'100y'},
+    bigNums: ['Billion','Trillion','Quadrillion','Quintillion','Sextillion','Septillion','Octillion','Nonillion','Decillion'],
+    bankrollAxis: "Bankroll ($)",
+    roundAxis: "Round",
+    yearAxis: "Year",
+    yearSuffix: "y",
+    titleRounds: "rounds",
+    legendSafe: "Safe",
+    legendRisky: "Risky",
+    legendFlat: "Flat",
+    legendPerYear: "%/y",
+    rightSafe: "safe",
+    rightRisky: "risky",
+    rightKelly: "kelly",
+    rightPerYear: "%/y",
+    locale: 'en',
+  },
+  de: {
+    title: "Kopf oder Zahl, mit einer gezinkten Münze (Wie man richtig zockt)",
+    subtitlePre: "(maximiert den Gewinn, wenn du eine bessere Chance als 50:50 hast. A.k.a. das ",
+    subtitleLink: "Kelly-Kriterium",
+    subtitlePost: ")",
+    subtitleHref: "https://de.wikipedia.org/wiki/Kelly-Kriterium",
+    edgeComment: "Wie viel besser stehen deine Chancen im Vergleich zu echtem Zufall? Meine beste Schätzung: 3% ~= Aktienmarkt (du weißt, dass er tendenziell steigt). 12% = bestinformierter Trader. 60% (80:20), wenn du Barron Frump bist und mit Öl handelst.",
+    lblEdge: "Edge",
+    lblB: "Quote b",
+    bAnnot: "Auszahlung bei Gewinn, relativ zum Einsatz",
+    rerollBtn: "Neu würfeln",
+    rerollAnnot: "Nötig, wenn du Edge oder Quote änderst. Erzeugt eine neue zufällige Münzwurf-Serie (falls dir dein Schicksal nicht gefällt).",
+    lblCapital: "Startkapital",
+    lblF1: "Sicher",
+    lblKelly: "Kelly",
+    lblF2: "Riskant",
+    lblBet: "Fix",
+    lblRate: "Feste Rendite",
+    rateUnit: "% pro Jahr",
+    rateAnnot: "sehr grob die Rendite des Aktienmarkts",
+    roundDef: "Eine Runde ist ein Münzwurf; simuliert einen Trade oder einen Tag am Markt",
+    lblRounds: "Runden",
+    roundsAnnot: "Pfeiltaste rechts erhöht",
+    logScaleLbl: "Log-Skala",
+    logOn: "An",
+    logOff: "Aus",
+    logAuto: "Auto",
+    wipeoutLbl: "Pleite bei $1",
+    betFracAnnot: pct => `setze ${pct.toFixed(2)}% des Kapitals pro Runde ein`,
+    betAmountAnnot: n => `setze $${n} pro Runde ein`,
+    edgeAnnot: (p, pWin, pLoss) => `p=${p.toFixed(3)} (${pWin.toFixed(1)} : ${pLoss.toFixed(1)} Chance)`,
+    spanLabels: {'1d':'1T', Week:'Wo', Month:'Mon', Qtr:'Q', Year:'Jahr', '3y':'3J', '10y':'10J', '30y':'30J', '100y':'100J'},
+    bigNums: ['Milliarde','Billion','Billiarde','Trillion','Trilliarde','Quadrillion','Quadrilliarde','Quintillion','Quintilliarde'],
+    bankrollAxis: "Kapital ($)",
+    roundAxis: "Runde",
+    yearAxis: "Jahr",
+    yearSuffix: "J",
+    titleRounds: "Runden",
+    legendSafe: "Sicher",
+    legendRisky: "Riskant",
+    legendFlat: "Fix",
+    legendPerYear: "%/Jahr",
+    rightSafe: "sicher",
+    rightRisky: "riskant",
+    rightKelly: "kelly",
+    rightPerYear: "%/Jahr",
+    locale: 'de',
+  },
+};
+
+const t = key => I18N[lang][key];
+
+function applyI18n() {
+  document.documentElement.lang = lang;
+  document.title = t('title');
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    el.textContent = t(el.dataset.i18n);
+  });
+  const sub = $('subtitle');
+  sub.textContent = '';
+  sub.append(
+    document.createTextNode(t('subtitlePre')),
+    Object.assign(document.createElement('a'), {
+      href: t('subtitleHref'), target: '_blank', rel: 'noopener', textContent: t('subtitleLink'),
+    }),
+    document.createTextNode(t('subtitlePost')),
+  );
+  $('timespan-btns').querySelectorAll('button').forEach(btn => {
+    btn.textContent = t('spanLabels')[btn.dataset.key];
+  });
+  $('lang-btns').querySelectorAll('button').forEach(b => {
+    b.classList.toggle('active', b.dataset.val === lang);
+  });
+}
 
 // ── state ────────────────────────────────────────────────────────────────────
 const pool = new Float64Array(POOL);
@@ -309,18 +442,14 @@ function fmtVal(x) {
     const factor = Math.pow(10, e - 2);
     return String(parseFloat((Math.floor(v / factor) * factor).toFixed(Math.max(0, 2 - e))));
   }
-  if (a >= 1e33) return floor3(x / 1e33) + ' Decillion';
-  if (a >= 1e30) return floor3(x / 1e30) + ' Nonillion';
-  if (a >= 1e27) return floor3(x / 1e27) + ' Octillion';
-  if (a >= 1e24) return floor3(x / 1e24) + ' Septillion';
-  if (a >= 1e21) return floor3(x / 1e21) + ' Sextillion';
-  if (a >= 1e18) return floor3(x / 1e18) + ' Quintillion';
-  if (a >= 1e15) return floor3(x / 1e15) + ' Quadrillion';
-  if (a >= 1e12) return floor3(x / 1e12) + ' Trillion';
-  if (a >= 1e9)  return floor3(x / 1e9)  + ' Billion';
+  const bigNums = t('bigNums'); // [1e9, 1e12, 1e15, ... 1e33] word for each 1000x step
+  for (let i = bigNums.length - 1; i >= 0; i--) {
+    const threshold = Math.pow(10, 9 + i * 3);
+    if (a >= threshold) return floor3(x / threshold) + ' ' + bigNums[i];
+  }
   if (a >= 1e6)  return floor3(x / 1e6)  + 'M';
   if (a >= 1e4)  return floor3(x / 1e3)  + 'k';
-  return Math.floor(a).toLocaleString();
+  return Math.floor(a).toLocaleString(t('locale'));
 }
 
 function fmtAxis(x) {
@@ -328,13 +457,13 @@ function fmtAxis(x) {
   if (x >= 1e12) return (x / 1e12) + 'T';
   if (x >= 1e9) return (x / 1e9) + 'B';
   if (x >= 1e6) return (x / 1e6) + 'M';
-  if (x >= 1000) return x.toLocaleString('en', { maximumFractionDigits: 0 });
+  if (x >= 1000) return x.toLocaleString(t('locale'), { maximumFractionDigits: 0 });
   if (x >= 1)    return +x.toPrecision(4) + '';
   return +x.toPrecision(2) + '';
 }
 
 function fmtYears(rounds) {
-  return Math.ceil(rounds / 252) + 'y';
+  return Math.ceil(rounds / 252) + t('yearSuffix');
 }
 
 function spread(ys, minGap) {
@@ -403,8 +532,7 @@ const getB     = () => parseFloat($('b-sl').value);
 const getP     = () => Math.min(0.999, Math.max(0.001, (getEdge() / 100 + 1) / (getB() + 1)));
 function updateEdgeAnnot() {
   const p = getP();
-  $('edge-annot').textContent =
-    `p=${p.toFixed(3)} (${(p * 100).toFixed(1)} : ${((1 - p) * 100).toFixed(1)} chance)`;
+  $('edge-annot').textContent = t('edgeAnnot')(p, p * 100, (1 - p) * 100);
 }
 const getF1    = () => parseFloat($('f1-sl').value) / 100;
 const getF2    = () => parseFloat($('f2-sl').value) / 100;
@@ -442,7 +570,7 @@ function draw() {
     : `(${b.toFixed(2)}×${(p * 100).toFixed(1)}%-${(q * 100).toFixed(1)}%)/${b.toFixed(2)}`;
   $('kelly-sl').value = fStarPct;
   $('kelly-annot').textContent =
-    `${fStarPct.toFixed(2)} = ${calcStr} — bet ${fStarPct.toFixed(2)}% of bankroll every round`;
+    `${fStarPct.toFixed(2)} = ${calcStr} — ${t('betFracAnnot')(fStarPct)}`;
 
   // Simulate
   const wins   = pool.slice(0, n);
@@ -636,13 +764,13 @@ function draw() {
   ctx.textAlign = 'center';
   ctx.fillStyle = '#666';
   ctx.font = '12px system-ui, sans-serif';
-  ctx.fillText('Bankroll ($)', 0, 0);
+  ctx.fillText(t('bankrollAxis'), 0, 0);
   ctx.restore();
 
   ctx.textAlign = 'center';
   ctx.fillStyle = '#666';
   ctx.font = '12px system-ui, sans-serif';
-  ctx.fillText(useYears ? 'Year' : 'Round', ml + pw / 2, H - 6);
+  ctx.fillText(useYears ? t('yearAxis') : t('roundAxis'), ml + pw / 2, H - 6);
 
   // Title
   const edge = b * p - q;
@@ -650,18 +778,18 @@ function draw() {
   ctx.fillStyle = '#222';
   ctx.font = '13px system-ui, sans-serif';
   ctx.fillText(
-    `${n.toLocaleString()} rounds  |  p=${p.toFixed(2)}  b=${b.toFixed(2)}  edge=${(edge * 100).toFixed(1)}%  |  Kelly f*=${fStar.toFixed(2)}`,
+    `${n.toLocaleString(t('locale'))} ${t('titleRounds')}  |  p=${p.toFixed(2)}  b=${b.toFixed(2)}  edge=${(edge * 100).toFixed(1)}%  |  Kelly f*=${fStar.toFixed(2)}`,
     ml + pw / 2, 23
   );
 
   // ── legend (top-left) ──
   const legendItems = [
     { color: C.start,  label: `Start $${fmtVal(start)}`, dashed: true },
-    { color: C.safe,   label: `Safe ${f1.toFixed(2)}` },
+    { color: C.safe,   label: `${t('legendSafe')} ${f1.toFixed(2)}` },
     ...(brK ? [{ color: C.kelly, label: `Kelly f*=${fStar.toFixed(2)}`, dashed: true }] : []),
-    { color: C.risky, label: `Risky ${f2.toFixed(2)}` },
-    { color: C.flat,  label: `Flat $${bet}/round` },
-    { color: C.growth, label: `${rate}%/y` },
+    { color: C.risky, label: `${t('legendRisky')} ${f2.toFixed(2)}` },
+    { color: C.flat,  label: `${t('legendFlat')} $${bet}/${t('roundAxis').toLowerCase()}` },
+    { color: C.growth, label: `${rate}${t('legendPerYear')}` },
   ];
   ctx.font = '11px system-ui, sans-serif';
   ctx.textAlign = 'left';
@@ -679,11 +807,11 @@ function draw() {
 
   // ── right-side labels ──
   const labelItems = [
-    { y: br1p[br1p.length - 1],   color: C.safe,  text: `safe: ${fmtVal(br1p[br1p.length - 1])}` },
-    { y: br2p[br2p.length - 1],   color: C.risky, text: `risky: ${fmtVal(br2p[br2p.length - 1])}` },
+    { y: br1p[br1p.length - 1],   color: C.safe,  text: `${t('rightSafe')}: ${fmtVal(br1p[br1p.length - 1])}` },
+    { y: br2p[br2p.length - 1],   color: C.risky, text: `${t('rightRisky')}: ${fmtVal(br2p[br2p.length - 1])}` },
     { y: brFlat[flatEnd],          color: C.flat,  text: `$${bet}: ${fmtVal(brFlat[flatEnd])}` },
-    ...(brKp ? [{ y: brKp[brKp.length - 1], color: C.kelly, text: `kelly: ${fmtVal(brKp[brKp.length - 1])}` }] : []),
-    { y: brGrowth[n], color: C.growth, text: `${rate}%/y: ${fmtVal(brGrowth[n])}` },
+    ...(brKp ? [{ y: brKp[brKp.length - 1], color: C.kelly, text: `${t('rightKelly')}: ${fmtVal(brKp[brKp.length - 1])}` }] : []),
+    { y: brGrowth[n], color: C.growth, text: `${rate}${t('rightPerYear')}: ${fmtVal(brGrowth[n])}` },
   ].filter(d => d.y >= 0.1);
 
   if (labelItems.length) {
@@ -735,7 +863,7 @@ function draw() {
 
 // ── UI wiring ────────────────────────────────────────────────────────────────
 function updateBetFracAnnot(id, frac) {
-  $(`${id}-annot`).textContent = `bet ${(frac * 100).toFixed(2)}% of bankroll every round`;
+  $(`${id}-annot`).textContent = t('betFracAnnot')(frac * 100);
 }
 
 function setFracs(p, b) {
@@ -750,7 +878,8 @@ function buildTimespanButtons() {
   const container = $('timespan-btns');
   Object.keys(TRADING_DAYS).forEach(label => {
     const btn = document.createElement('button');
-    btn.textContent = label;
+    btn.dataset.key = label;
+    btn.textContent = t('spanLabels')[label];
     if (label === activeSpan) btn.classList.add('active');
     btn.addEventListener('click', () => {
       activeSpan = label;
@@ -772,7 +901,7 @@ function updateBetMax() {
     sl.value = maxBet;
     $('bet-num').value = maxBet;
   }
-  $('bet-annot').textContent = `set $${$('bet-sl').value} each round`;
+  $('bet-annot').textContent = t('betAmountAnnot')($('bet-sl').value);
 }
 
 function reroll() {
@@ -782,6 +911,7 @@ function reroll() {
 }
 
 function init() {
+  applyI18n();
   buildTimespanButtons();
 
   // Capital (log slider ↔ plain $ number input)
@@ -869,14 +999,14 @@ function init() {
   });
   $('bet-sl').addEventListener('input', () => {
     $('bet-num').value = getBet();
-    $('bet-annot').textContent = `set $${getBet()} each round`;
+    $('bet-annot').textContent = t('betAmountAnnot')(getBet());
     draw();
   });
   $('bet-num').addEventListener('change', () => {
     const maxBet = parseFloat($('bet-sl').max);
     const v = clamp(parseFloat($('bet-num').value) || 1, 1, maxBet);
     $('bet-sl').value = v; $('bet-num').value = v;
-    $('bet-annot').textContent = `set $${v} each round`;
+    $('bet-annot').textContent = t('betAmountAnnot')(v);
     draw();
   });
   $('rate-sl').addEventListener('input', () => {
@@ -897,6 +1027,18 @@ function init() {
   });
   $('wipeout-chk').addEventListener('change', draw);
   $('reroll-btn').addEventListener('click', reroll);
+
+  $('lang-btns').querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      lang = btn.dataset.val;
+      localStorage.setItem('kellyLang', lang);
+      applyI18n();
+      updateEdgeAnnot();
+      setFracs(getP(), getB());
+      updateBetMax();
+      draw();
+    });
+  });
 
   // arrow keys step rounds ±1 when no control has focus
   window.addEventListener('keydown', (e) => {
