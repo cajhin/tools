@@ -160,18 +160,23 @@ h1 {
 </div>
 
 <div class="row">
-  <span class="lbl" data-i18n="lblEdge">Edge</span>
-  <input type="range" id="edge-sl" min="-100" max="100" step="0.01" value="3.00">
-  <input type="number"  id="edge-num" min="-100" max="100" step="any" value="3.00">
+  <span class="lbl" data-i18n="lblChance">Chance</span>
+  <input type="range" id="chance-sl" min="0" max="100" step="0.01" value="51.50">
+  <input type="number"  id="chance-num" min="0" max="100" step="any" value="51.50">
   <span style="margin-left:4px; color:#555; white-space:nowrap">%</span>
-  <span id="edge-annot" style="margin-left:8px; color:#888; font-size:12px; white-space:nowrap">p=0.515</span>
+  <span id="chance-annot" style="margin-left:8px; color:#888; font-size:12px; white-space:nowrap"></span>
 </div>
 
 <div class="row">
-  <span class="lbl" data-i18n="lblB">Net odds b</span>
-  <input type="range" id="b-sl" min="0.1" max="5.0" step="0.01" value="1.0">
-  <input type="number"  id="b-num" min="0.1" max="5.0" step="any" value="1.0">
+  <span class="lbl" data-i18n="lblB">Reward</span>
+  <input type="range" id="b-sl" min="-2" max="4" step="0.001" value="0">
+  <input type="number"  id="b-num" min="0.01" max="10000" step="any" value="1.0">
   <span data-i18n="bAnnot" style="margin-left:8px; color:#888; font-size:12px; white-space:nowrap"></span>
+</div>
+
+<div class="row" style="margin-bottom:0">
+  <span class="lbl"></span>
+  <span id="kelly-formula-annot" style="color:#888; font-size:12px; white-space:nowrap"></span>
 </div>
 
 <div class="row" style="margin-bottom:0">
@@ -199,7 +204,7 @@ h1 {
 <div class="row">
   <span class="lbl" data-i18n="lblKelly" style="color:seagreen">Kelly</span>
   <input type="range" id="kelly-sl" min="0" max="100" step="0.001" value="10" disabled>
-  <span style="margin-left:4px; color:#555; white-space:nowrap">%</span>
+  <span style="margin-left:4px; color:#555; white-space:nowrap">f*</span>
   <span id="kelly-annot" style="margin-left:8px; color:#888; font-size:12px; white-space:nowrap">10.00 = (55%-45%) — bet 10.00% of bankroll every round</span>
 </div>
 
@@ -282,12 +287,13 @@ const I18N = {
     subtitleLink: "Kelly Criterion",
     subtitlePost: ")",
     subtitleHref: "https://en.wikipedia.org/wiki/Kelly_criterion",
-    edgeComment: "How much better are your chances vs. true random? My best guess: 3% ~= stock market (you know it tends to go up). 12% = top informed trader. 60% (80:20) if you are Barron Frump and trade in oil.",
-    lblEdge: "Edge",
-    lblB: "Net odds b",
-    bAnnot: "Payout if you win, relative to bet",
+    edgeComment: "How much better are your chances vs. true random? My best guess: 51.5% ~= stock market (you know it tends to go up). 56% = top informed trader. 80% if you are Barron Frump and trade in oil.",
+    lblChance: "Chance",
+    lblB: "Reward",
+    bAnnot: "Payout factor if you win, relative to bet",
     rerollBtn: "Roll again",
-    rerollAnnot: "Required if you change edge or odds. Generates a new random coinflip series (if you don't like your destiny).",
+    rerollAnnot: "Required if you change chance or reward. Generates a new random coinflip series (if you don't like your destiny).",
+    lblKellyFormula: "Kelly formula",
     lblCapital: "Start capital",
     lblF1: "Safe bet",
     lblKelly: "Kelly",
@@ -306,7 +312,7 @@ const I18N = {
     wipeoutLbl: "Wipeout at $1",
     betFracAnnot: pct => `bet ${pct.toFixed(2)}% of bankroll every round`,
     betAmountAnnot: n => `set $${n} each round`,
-    edgeAnnot: (p, pWin, pLoss) => `p=${p.toFixed(3)} (${pWin.toFixed(1)} : ${pLoss.toFixed(1)} chance)`,
+    chanceAnnot: (pWin, pLoss) => `${pWin.toFixed(1)} : ${pLoss.toFixed(1)} chance`,
     spanLabels: {'1d':'1d', Week:'Week', Month:'Month', Qtr:'Qtr', Year:'Year', '3y':'3y', '10y':'10y', '30y':'30y', '100y':'100y'},
     bigNums: ['Billion','Trillion','Quadrillion','Quintillion','Sextillion','Septillion','Octillion','Nonillion','Decillion'],
     bankrollAxis: "Bankroll ($)",
@@ -330,12 +336,13 @@ const I18N = {
     subtitleLink: "Kelly-Kriterium",
     subtitlePost: ")",
     subtitleHref: "https://de.wikipedia.org/wiki/Kelly-Kriterium",
-    edgeComment: "Wie viel besser stehen deine Chancen im Vergleich zu echtem Zufall? Meine beste Schätzung: 3% ~= Aktienmarkt (du weißt, dass er tendenziell steigt). 12% = bestinformierter Trader. 60% (80:20), wenn du Barron Frump bist und mit Öl handelst.",
-    lblEdge: "Edge",
-    lblB: "Quote b",
-    bAnnot: "Auszahlung bei Gewinn, relativ zum Einsatz",
+    edgeComment: "Wie viel besser stehen deine Chancen im Vergleich zu echtem Zufall? Meine beste Schätzung: 51,5% ~= Aktienmarkt (du weißt, dass er tendenziell steigt). 56% = bestinformierter Trader. 80%, wenn du Barron Frump bist und mit Öl handelst.",
+    lblChance: "Chance",
+    lblB: "Gewinn",
+    bAnnot: "Auszahlungsfaktor bei Gewinn, relativ zum Einsatz",
     rerollBtn: "Neu würfeln",
-    rerollAnnot: "Nötig, wenn du Edge oder Quote änderst. Erzeugt eine neue zufällige Münzwurf-Serie (falls dir dein Schicksal nicht gefällt).",
+    rerollAnnot: "Nötig, wenn du Chance oder Gewinn änderst. Erzeugt eine neue zufällige Münzwurf-Serie (falls dir dein Schicksal nicht gefällt).",
+    lblKellyFormula: "Kelly-Formel",
     lblCapital: "Startkapital",
     lblF1: "Sicher",
     lblKelly: "Kelly",
@@ -354,7 +361,7 @@ const I18N = {
     wipeoutLbl: "Pleite bei $1",
     betFracAnnot: pct => `setze ${pct.toFixed(2)}% des Kapitals pro Runde ein`,
     betAmountAnnot: n => `setze $${n} pro Runde ein`,
-    edgeAnnot: (p, pWin, pLoss) => `p=${p.toFixed(3)} (${pWin.toFixed(1)} : ${pLoss.toFixed(1)} Chance)`,
+    chanceAnnot: (pWin, pLoss) => `${pWin.toFixed(1)} : ${pLoss.toFixed(1)} Chance`,
     spanLabels: {'1d':'1T', Week:'Wo', Month:'Mon', Qtr:'Q', Year:'Jahr', '3y':'3J', '10y':'10J', '30y':'30J', '100y':'100J'},
     bigNums: ['Milliarde','Billion','Billiarde','Trillion','Trilliarde','Quadrillion','Quadrilliarde','Quintillion','Quintilliarde'],
     bankrollAxis: "Kapital ($)",
@@ -428,7 +435,7 @@ function firstWipeout(br) {
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 function defaultFracs(p, b) {
-  const fStar = Math.max((b * p - (1 - p)) / b, 0);
+  const fStar = b > 0 ? Math.max((b * p - (1 - p)) / b, 0) : 0;
   return {
     f1: Math.round(fStar / 2 * 100) / 100,
     f2: Math.min(Math.round(fStar * 2 * 100) / 100, 1.0),
@@ -526,13 +533,18 @@ function roundsToSlider(n) {
 
 // ── read UI ──────────────────────────────────────────────────────────────────
 const $ = id => document.getElementById(id);
-const getEdge  = () => parseFloat($('edge-sl').value);
-const getB     = () => parseFloat($('b-sl').value);
-// edge = b*p - (1-p)  =>  p = (edge/100 + 1) / (b + 1)
-const getP     = () => Math.min(0.999, Math.max(0.001, (getEdge() / 100 + 1) / (getB() + 1)));
-function updateEdgeAnnot() {
+const getChance = () => parseFloat($('chance-sl').value);
+const getB     = () => Math.pow(10, parseFloat($('b-sl').value));
+const getP     = () => Math.min(0.999, Math.max(0.001, getChance() / 100));
+function updateChanceAnnot() {
   const p = getP();
-  $('edge-annot').textContent = t('edgeAnnot')(p, p * 100, (1 - p) * 100);
+  $('chance-annot').textContent = t('chanceAnnot')(p * 100, (1 - p) * 100);
+}
+function updateKellyFormulaAnnot() {
+  const p = getP(), q = 1 - p, b = getB();
+  const fStarPct = b > 0 ? Math.max((b * p - q) / b, 0) * 100 : 0;
+  $('kelly-formula-annot').textContent =
+    `${t('lblKellyFormula')}: f* = p − q/b = ${(p * 100).toFixed(2)}% − ${(q * 100).toFixed(2)}%/${b.toFixed(2)} = ${fStarPct.toFixed(2)}%`;
 }
 const getF1    = () => parseFloat($('f1-sl').value) / 100;
 const getF2    = () => parseFloat($('f2-sl').value) / 100;
@@ -561,16 +573,14 @@ function draw() {
   const bet = getBet(), n = getN(), start = getStart();
   const showWO = getWO();
   const q = 1 - p;
-  const fStar = Math.max((b * p - q) / b, 0);
+  const fStar = b > 0 ? Math.max((b * p - q) / b, 0) : 0;
 
   // Kelly label
+  updateChanceAnnot();
+  updateKellyFormulaAnnot();
   const fStarPct = fStar * 100;
-  const calcStr = Math.abs(b - 1) < 0.001
-    ? `(${(p * 100).toFixed(1)}%-${(q * 100).toFixed(1)}%)`
-    : `(${b.toFixed(2)}×${(p * 100).toFixed(1)}%-${(q * 100).toFixed(1)}%)/${b.toFixed(2)}`;
   $('kelly-sl').value = fStarPct;
-  $('kelly-annot').textContent =
-    `${fStarPct.toFixed(2)} = ${calcStr} — ${t('betFracAnnot')(fStarPct)}`;
+  $('kelly-annot').textContent = t('betFracAnnot')(fStarPct);
 
   // Simulate
   const wins   = pool.slice(0, n);
@@ -928,31 +938,30 @@ function init() {
     draw();
   });
 
-  // edge — also resets safe/risky fracs
-  $('edge-sl').addEventListener('input', () => {
-    $('edge-num').value = getEdge();
-    updateEdgeAnnot();
+  // chance — also resets safe/risky fracs
+  $('chance-sl').addEventListener('input', () => {
+    $('chance-num').value = getChance();
     setFracs(getP(), getB());
     draw();
   });
-  $('edge-num').addEventListener('change', () => {
-    const v = clamp(parseFloat($('edge-num').value) || 1, -100, 100);
-    $('edge-sl').value = v; $('edge-num').value = v;
-    updateEdgeAnnot();
+  $('chance-num').addEventListener('change', () => {
+    const v = clamp(parseFloat($('chance-num').value) || 1, 0, 100);
+    $('chance-sl').value = v; $('chance-num').value = v;
     setFracs(getP(), getB());
     draw();
   });
 
-  // b
+  // b (reward) — also resets safe/risky fracs
   $('b-sl').addEventListener('input', () => {
-    $('b-num').value = parseFloat($('b-sl').value);
-    updateEdgeAnnot();
+    $('b-num').value = Math.round(getB() * 1000) / 1000;
+    setFracs(getP(), getB());
     draw();
   });
   $('b-num').addEventListener('change', () => {
-    const v = clamp(parseFloat($('b-num').value) || 1.0, 0.1, 5.0);
-    $('b-sl').value = v; $('b-num').value = v;
-    updateEdgeAnnot();
+    const v = clamp(parseFloat($('b-num').value) || 1.0, 0.01, 10000);
+    $('b-sl').value = Math.log10(v);
+    $('b-num').value = v;
+    setFracs(getP(), getB());
     draw();
   });
 
@@ -1033,7 +1042,6 @@ function init() {
       lang = btn.dataset.val;
       localStorage.setItem('kellyLang', lang);
       applyI18n();
-      updateEdgeAnnot();
       setFracs(getP(), getB());
       updateBetMax();
       draw();
@@ -1052,7 +1060,6 @@ function init() {
     draw();
   });
 
-  updateEdgeAnnot();
   setFracs(getP(), getB());
   updateBetMax();
   reroll(); // initial roll + draw
