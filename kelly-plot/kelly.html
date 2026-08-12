@@ -23,7 +23,7 @@ body {
 .row {
   display: flex;
   align-items: center;
-  height: 30px;
+  min-height: 30px;
   margin-bottom: 3px;
 }
 .lbl {
@@ -40,7 +40,7 @@ input[type=range] {
   cursor: pointer;
   accent-color: #4a90d9;
 }
-input[type=number] {
+.num-input {
   width: 72px;
   margin-left: 8px;
   padding: 2px 5px;
@@ -162,27 +162,27 @@ h1 {
 <div class="row">
   <span class="lbl" data-i18n="lblChance">Chance</span>
   <input type="range" id="chance-sl" min="0" max="100" step="0.01" value="51.50">
-  <input type="number"  id="chance-num" min="0" max="100" step="any" value="51.50">
+  <input type="text" class="num-input" id="chance-num" value="51.50">
   <span style="margin-left:4px; color:#555; white-space:nowrap">%</span>
-  <span id="chance-annot" style="margin-left:8px; color:#888; font-size:12px; white-space:nowrap"></span>
+  <span id="chance-annot" style="margin-left:8px; color:#888; font-size:12px; white-space:normal"></span>
 </div>
 
 <div class="row">
   <span class="lbl" data-i18n="lblB">Reward</span>
   <input type="range" id="b-sl" min="-2" max="4" step="0.001" value="0">
-  <input type="number"  id="b-num" min="0.01" max="10000" step="any" value="1.0">
-  <span data-i18n="bAnnot" style="margin-left:8px; color:#888; font-size:12px; white-space:nowrap"></span>
+  <input type="text" class="num-input" id="b-num" value="1.0">
+  <span data-i18n="bAnnot" style="margin-left:8px; color:#888; font-size:12px; white-space:normal"></span>
 </div>
 
 <div class="row" style="margin-bottom:0">
   <span class="lbl"></span>
-  <span id="kelly-formula-annot" style="color:#888; font-size:12px; white-space:nowrap"></span>
+  <span id="kelly-formula-annot" style="color:#888; font-size:12px; white-space:normal"></span>
 </div>
 
 <div class="row" style="margin-bottom:0">
   <span class="lbl"></span>
   <button id="reroll-btn" data-i18n="rerollBtn">Roll again</button>
-  <span data-i18n="rerollAnnot" style="margin-left:8px; color:#888; font-size:12px; white-space:nowrap"></span>
+  <span data-i18n="rerollAnnot" style="margin-left:8px; color:#888; font-size:12px; white-space:normal"></span>
 </div>
 </div>
 
@@ -190,58 +190,72 @@ h1 {
 <div class="row">
   <span class="lbl" data-i18n="lblCapital">Start capital</span>
   <input type="range" id="capital-sl" min="2" max="6" step="0.001" value="3">
-  <input type="number" id="capital-num" min="100" max="1000000" step="any" value="1000">
+  <input type="text" class="num-input" id="capital-num" value="1000">
+</div>
+
+<div class="row">
+  <span class="lbl" data-i18n="lblWipeout">Wipeout at $</span>
+  <input type="range" id="wipeout-sl" min="0" max="1000" step="1" value="1">
+  <input type="text" class="num-input" id="wipeout-num" value="1">
+  <span data-i18n="wipeoutAnnot" style="margin-left:8px; color:#888; font-size:12px; white-space:normal;"></span>
 </div>
 
 <div class="row">
   <span class="lbl" data-i18n="lblF1" style="color:steelblue">Safe bet</span>
   <input type="range" id="f1-sl" min="0" max="100" step="0.01" value="5">
-  <input type="number" id="f1-num" min="0" max="100" step="any" value="5">
+  <input type="text" class="num-input" id="f1-num" value="5">
   <span style="margin-left:4px; color:#555; white-space:nowrap">%</span>
-  <span id="f1-annot" style="margin-left:8px; color:#888; font-size:12px; white-space:nowrap">bet 5.00% of bankroll every round</span>
+  <span id="f1-annot" style="margin-left:8px; color:#888; font-size:12px; white-space:normal">bet 5.00% of bankroll every round</span>
 </div>
 
 <div class="row">
   <span class="lbl" data-i18n="lblKelly" style="color:seagreen">Kelly</span>
   <input type="range" id="kelly-sl" min="0" max="100" step="0.001" value="10" disabled>
   <span style="margin-left:4px; color:#555; white-space:nowrap">f*</span>
-  <span id="kelly-annot" style="margin-left:8px; color:#888; font-size:12px; white-space:nowrap">10.00 = (55%-45%) — bet 10.00% of bankroll every round</span>
+  <span id="kelly-annot" style="margin-left:8px; color:#888; font-size:12px; white-space:normal">10.00 = (55%-45%) — bet 10.00% of bankroll every round</span>
 </div>
 
 <div class="row">
   <span class="lbl" data-i18n="lblF2" style="color:darkorange">Risky bet</span>
   <input type="range" id="f2-sl" min="0" max="100" step="0.01" value="20">
-  <input type="number" id="f2-num" min="0" max="100" step="any" value="20">
+  <input type="text" class="num-input" id="f2-num" value="20">
   <span style="margin-left:4px; color:#555; white-space:nowrap">%</span>
-  <span id="f2-annot" style="margin-left:8px; color:#888; font-size:12px; white-space:nowrap">bet 20.00% of bankroll every round</span>
+  <span id="f2-annot" style="margin-left:8px; color:#888; font-size:12px; white-space:normal">bet 20.00% of bankroll every round</span>
 </div>
 
 <div class="row">
   <span class="lbl" data-i18n="lblBet" style="color:black">Fixed bet</span>
-  <input type="range" id="bet-sl" min="1" max="50" step="0.01" value="10">
-  <input type="number" id="bet-num" min="1" max="50" step="any" value="10">
-  <span id="bet-annot" style="margin-left:8px; color:#888; font-size:12px; white-space:nowrap">set $10 each round</span>
+  <input type="range" id="bet-sl" min="1" max="1000" step="0.01" value="20">
+  <input type="text" class="num-input" id="bet-num" value="20">
+  <span id="bet-annot" style="margin-left:8px; color:#888; font-size:12px; white-space:normal">set $10 each round</span>
+</div>
+
+<div class="row">
+  <span class="lbl" data-i18n="lblRate">Fixed rate</span>
+  <input type="range" id="rate-sl" min="0" max="100" step="0.1" value="10">
+  <input type="text" class="num-input" id="rate-num" value="10">
+  <span data-i18n="rateUnit" style="margin-left:4px; color:#555; white-space:nowrap"></span>
+  <span data-i18n="rateAnnot" style="margin-left:8px; color:#888; font-size:12px; white-space:normal"></span>
 </div>
 
 <div class="row" style="margin-bottom:0">
-  <span class="lbl" data-i18n="lblRate">Fixed rate</span>
-  <input type="range" id="rate-sl" min="0" max="100" step="0.1" value="10">
-  <input type="number" id="rate-num" min="0" max="100" step="any" value="10">
-  <span data-i18n="rateUnit" style="margin-left:4px; color:#555; white-space:nowrap"></span>
-  <span data-i18n="rateAnnot" style="margin-left:8px; color:#888; font-size:12px; white-space:nowrap"></span>
+  <span class="lbl" data-i18n="lblSSS" style="color:purple">SSS</span>
+  <input type="range" id="sss-sl" min="1" max="1000" step="1" value="20">
+  <input type="text" class="num-input" id="sss-num" value="20">
+  <span id="sss-annot" style="margin-left:8px; color:#888; font-size:12px; white-space:normal"></span>
 </div>
 </div>
 
 <div style="border:1px solid #d0d0d0; border-radius:5px; padding:2px 0; margin-bottom:3px;">
 <div class="row" style="height:auto; margin-bottom:2px;">
   <span class="lbl"></span>
-  <span data-i18n="roundDef" style="color:#888; font-size:12px; white-space:nowrap"></span>
+  <span data-i18n="roundDef" style="color:#888; font-size:12px; white-space:normal"></span>
 </div>
 <div class="row" style="margin-bottom:0">
   <span class="lbl" data-i18n="lblRounds">Rounds</span>
   <input type="range" id="rounds-sl" min="0" max="1000" step="1" value="0">
-  <input type="number" id="rounds-num" min="1" max="25200" step="1" value="1">
-  <span data-i18n="roundsAnnot" style="margin-left:8px; color:#888; font-size:12px; white-space:nowrap"></span>
+  <input type="text" class="num-input" id="rounds-num" value="1">
+  <span data-i18n="roundsAnnot" style="margin-left:8px; color:#888; font-size:12px; white-space:normal"></span>
 </div>
 <div class="row timespan-row" style="margin-bottom:0">
   <div class="spacer"></div>
@@ -260,7 +274,7 @@ h1 {
       <button data-val="auto" class="active" data-i18n="logAuto">Auto</button>
     </div>
   </div>
-  <label><input type="checkbox" id="wipeout-chk" checked> <span data-i18n="wipeoutLbl">Wipeout at $1</span></label>
+  <label><input type="checkbox" id="wipeout-chk" checked> <span data-i18n="wipeoutLbl">Show wipeout</span> <span id="wipeout-chk-val" style="color:#888;"></span></label>
 </div>
 
 </div>
@@ -274,7 +288,7 @@ const TRADING_DAYS = {
 };
 const C = {
   safe:'steelblue', risky:'darkorange', kelly:'seagreen',
-  flat:'black', win:'#2ca02c', loss:'#d62728', start:'#999', growth:'#bbb',
+  flat:'black', win:'#2ca02c', loss:'#d62728', start:'#999', growth:'#bbb', sss:'purple',
 };
 
 // ── i18n ─────────────────────────────────────────────────────────────────────
@@ -290,18 +304,22 @@ const I18N = {
     edgeComment: "How much better are your chances vs. true random? My best guess: 51.5% ~= stock market (you know it tends to go up). 56% = top informed trader. 80% if you are Barron Frump and trade in oil.",
     lblChance: "Chance",
     lblB: "Reward",
-    bAnnot: "Payout factor if you win, relative to bet",
+    bAnnot: "Payout factor if you win, relative to bet (b)",
     rerollBtn: "Roll again",
     rerollAnnot: "Required if you change chance or reward. Generates a new random coinflip series (if you don't like your destiny).",
     lblKellyFormula: "Kelly formula",
     lblCapital: "Start capital",
-    lblF1: "Safe bet",
+    lblWipeout: "Wipeout at $",
+    wipeoutAnnot: "with how many $ left are you bankrupt (kelly never goes to 0 but $1 is probably “over for you”)",
+    lblF1: "Safe bet ('half Kelly')",
     lblKelly: "Kelly",
     lblF2: "Risky bet",
     lblBet: "Fixed bet",
     lblRate: "Fixed rate",
     rateUnit: "% per year",
-    rateAnnot: "very roughly the stock market return rate",
+    rateAnnot: "(bonds~=4%; stock market~=10%; 10x in 10y = 26%)",
+    lblSSS: "SSS (Spontaneous Sergio Strategy)",
+    sssAnnot: pct => `bet ${pct.toFixed(2)}% of start capital after each win; double on every loss`,
     roundDef: "One Round is one coin flip; simulates one trade, or one day in the market",
     lblRounds: "Rounds",
     roundsAnnot: "Cursor-Right advances",
@@ -309,10 +327,10 @@ const I18N = {
     logOn: "On",
     logOff: "Off",
     logAuto: "Auto",
-    wipeoutLbl: "Wipeout at $1",
+    wipeoutLbl: "Show wipeout",
     betFracAnnot: pct => `bet ${pct.toFixed(2)}% of bankroll every round`,
     betAmountAnnot: n => `set $${n} each round`,
-    chanceAnnot: (pWin, pLoss) => `${pWin.toFixed(1)} : ${pLoss.toFixed(1)} chance`,
+    chanceAnnot: (pWin, pLoss) => `${pWin.toFixed(1)} : ${pLoss.toFixed(1)} chance (p:q)`,
     spanLabels: {'1d':'1d', Week:'Week', Month:'Month', Qtr:'Qtr', Year:'Year', '3y':'3y', '10y':'10y', '30y':'30y', '100y':'100y'},
     bigNums: ['Billion','Trillion','Quadrillion','Quintillion','Sextillion','Septillion','Octillion','Nonillion','Decillion'],
     bankrollAxis: "Bankroll ($)",
@@ -339,18 +357,22 @@ const I18N = {
     edgeComment: "Wie viel besser stehen deine Chancen im Vergleich zu echtem Zufall? Meine beste Schätzung: 51,5% ~= Aktienmarkt (du weißt, dass er tendenziell steigt). 56% = bestinformierter Trader. 80%, wenn du Barron Frump bist und mit Öl handelst.",
     lblChance: "Chance",
     lblB: "Gewinn",
-    bAnnot: "Auszahlungsfaktor bei Gewinn, relativ zum Einsatz",
+    bAnnot: "Auszahlungsfaktor bei Gewinn, relativ zum Einsatz (b)",
     rerollBtn: "Neu würfeln",
     rerollAnnot: "Nötig, wenn du Chance oder Gewinn änderst. Erzeugt eine neue zufällige Münzwurf-Serie (falls dir dein Schicksal nicht gefällt).",
     lblKellyFormula: "Kelly-Formel",
     lblCapital: "Startkapital",
-    lblF1: "Sicher",
+    lblWipeout: "Pleite bei $",
+    wipeoutAnnot: "mit wie vielen $ übrig bist du bankrott (Kelly geht nie auf 0, aber $1 ist wahrscheinlich „vorbei für dich“)",
+    lblF1: "Sicher ('halber Kelly')",
     lblKelly: "Kelly",
     lblF2: "Riskant",
     lblBet: "Fix",
     lblRate: "Feste Rendite",
     rateUnit: "% pro Jahr",
-    rateAnnot: "sehr grob die Rendite des Aktienmarkts",
+    rateAnnot: "(Anleihen~=4%; Aktienmarkt~=10%; 10x in 10 Jahren = 26%)",
+    lblSSS: "SSS (Spontaneous Sergio Strategy)",
+    sssAnnot: pct => `setze ${pct.toFixed(2)}% des Startkapitals nach jedem Gewinn ein; verdopple bei jedem Verlust`,
     roundDef: "Eine Runde ist ein Münzwurf; simuliert einen Trade oder einen Tag am Markt",
     lblRounds: "Runden",
     roundsAnnot: "Pfeiltaste rechts erhöht",
@@ -358,10 +380,10 @@ const I18N = {
     logOn: "An",
     logOff: "Aus",
     logAuto: "Auto",
-    wipeoutLbl: "Pleite bei $1",
+    wipeoutLbl: "Pleite anzeigen",
     betFracAnnot: pct => `setze ${pct.toFixed(2)}% des Kapitals pro Runde ein`,
     betAmountAnnot: n => `setze $${n} pro Runde ein`,
-    chanceAnnot: (pWin, pLoss) => `${pWin.toFixed(1)} : ${pLoss.toFixed(1)} Chance`,
+    chanceAnnot: (pWin, pLoss) => `${pWin.toFixed(1)} : ${pLoss.toFixed(1)} Chance (p:q)`,
     spanLabels: {'1d':'1T', Week:'Wo', Month:'Mon', Qtr:'Q', Year:'Jahr', '3y':'3J', '10y':'10J', '30y':'30J', '100y':'100J'},
     bigNums: ['Milliarde','Billion','Billiarde','Trillion','Trilliarde','Quadrillion','Quadrilliarde','Quintillion','Quintilliarde'],
     bankrollAxis: "Kapital ($)",
@@ -428,8 +450,25 @@ function simulateFlat(wins, b, bet, start) {
   return br;
 }
 
-function firstWipeout(br) {
-  for (let i = 0; i < br.length; i++) if (br[i] <= 1.0) return i;
+function simulateSSS(wins, b, baseBet, start) {
+  const br = new Float64Array(wins.length + 1);
+  br[0] = start;
+  let bet = baseBet;
+  for (let i = 0; i < wins.length; i++) {
+    const actualBet = Math.min(bet, Math.max(br[i], 0));
+    if (wins[i]) {
+      br[i+1] = br[i] + b * actualBet;
+      bet = baseBet;
+    } else {
+      br[i+1] = br[i] - actualBet;
+      bet = actualBet * 2;
+    }
+  }
+  return br;
+}
+
+function firstWipeout(br, threshold) {
+  for (let i = 0; i < br.length; i++) if (br[i] <= threshold) return i;
   return null;
 }
 
@@ -437,8 +476,8 @@ function firstWipeout(br) {
 function defaultFracs(p, b) {
   const fStar = b > 0 ? Math.max((b * p - (1 - p)) / b, 0) : 0;
   return {
-    f1: Math.round(fStar / 2 * 100) / 100,
-    f2: Math.min(Math.round(fStar * 2 * 100) / 100, 1.0),
+    f1: Math.round(fStar / 2 * 10000) / 10000,
+    f2: Math.min(Math.round(fStar * 2 * 10000) / 10000, 1.0),
   };
 }
 
@@ -457,6 +496,10 @@ function fmtVal(x) {
   if (a >= 1e6)  return floor3(x / 1e6)  + 'M';
   if (a >= 1e4)  return floor3(x / 1e3)  + 'k';
   return Math.floor(a).toLocaleString(t('locale'));
+}
+
+function fmtSigned(x) {
+  return (x < 0 ? '-' : '') + fmtVal(Math.abs(x));
 }
 
 function fmtAxis(x) {
@@ -550,12 +593,28 @@ const getF1    = () => parseFloat($('f1-sl').value) / 100;
 const getF2    = () => parseFloat($('f2-sl').value) / 100;
 const getBet   = () => parseFloat($('bet-sl').value);
 const getRate  = () => parseFloat($('rate-sl').value);
+const getSSS   = () => parseFloat($('sss-sl').value);
 let roundsValue = 1;
 const getN     = () => roundsValue;
 const getStart = () => Math.pow(10, parseFloat($('capital-sl').value));
 const getWO    = () => $('wipeout-chk').checked;
+const getWOThreshold = () => parseFloat($('wipeout-num').value) || 0;
 
 function clamp(v, lo, hi) { return Math.min(hi, Math.max(lo, v)); }
+
+// Evaluates simple arithmetic typed into a number field, e.g. "1/37" or "1/15+5*3-1".
+// Whitelisting characters before Function() keeps this to digits/operators only.
+function evalExpr(str) {
+  if (typeof str !== 'string') return NaN;
+  const s = str.trim();
+  if (!s || !/^[0-9+\-*/(). ]+$/.test(s)) return parseFloat(s);
+  try {
+    const v = Function('"use strict"; return (' + s + ')')();
+    return typeof v === 'number' && Number.isFinite(v) ? v : NaN;
+  } catch {
+    return NaN;
+  }
+}
 
 function setRounds(n) {
   roundsValue = clamp(Math.round(n), 1, POOL);
@@ -571,6 +630,8 @@ function draw() {
 
   const p = getP(), b = getB(), f1 = getF1(), f2 = getF2();
   const bet = getBet(), n = getN(), start = getStart();
+  const sssBet = getSSS();
+  $('sss-annot').textContent = t('sssAnnot')(sssBet / start * 100);
   const showWO = getWO();
   const q = 1 - p;
   const fStar = b > 0 ? Math.max((b * p - q) / b, 0) : 0;
@@ -587,6 +648,7 @@ function draw() {
   const br1    = simulate(wins, b, f1, start);
   const br2    = simulate(wins, b, f2, start);
   const brFlat = simulateFlat(wins, b, bet, start);
+  const brSSS  = simulateSSS(wins, b, sssBet, start);
   const brK    = fStar > 0 ? simulate(wins, b, fStar, start) : null;
 
   const rate = getRate();
@@ -595,20 +657,25 @@ function draw() {
   for (let i = 0; i <= n; i++) brGrowth[i] = start * Math.pow(dailyG, i);
 
   // Wipeouts
-  const wo1    = showWO ? firstWipeout(br1)    : null;
-  const wo2    = showWO ? firstWipeout(br2)    : null;
-  const woFlat = showWO ? firstWipeout(brFlat) : null;
-  const woK    = (showWO && brK) ? firstWipeout(brK) : null;
+  const woThresh = getWOThreshold();
+  $('wipeout-chk-val').textContent = `($${fmtSigned(woThresh)})`;
+  const wo1    = showWO ? firstWipeout(br1, woThresh)    : null;
+  const wo2    = showWO ? firstWipeout(br2, woThresh)    : null;
+  const woFlat = showWO ? firstWipeout(brFlat, woThresh) : null;
+  const woSSS  = showWO ? firstWipeout(brSSS, woThresh)  : null;
+  const woK    = (showWO && brK) ? firstWipeout(brK, woThresh) : null;
 
   const br1p   = wo1    != null ? br1.slice(0, wo1 + 1)    : br1;
   const br2p   = wo2    != null ? br2.slice(0, wo2 + 1)    : br2;
   const brKp   = brK ? (woK != null ? brK.slice(0, woK + 1) : brK) : null;
   const flatEnd = woFlat != null ? woFlat : n;
   const brFlatp = brFlat.slice(0, flatEnd + 1);
+  const sssEnd = woSSS != null ? woSSS : n;
+  const brSSSp = brSSS.slice(0, sssEnd + 1);
 
   // Y range (use only plotted, finite data — extreme compounding can overflow
   // a series to Infinity, which must never reach the scale/tick math below)
-  const visArrays = [br1p, br2p, brFlatp, brGrowth];
+  const visArrays = [br1p, br2p, brFlatp, brSSSp, brGrowth];
   if (brKp) visArrays.push(brKp);
   const all = visArrays.flatMap(a => Array.from(a)).filter(Number.isFinite);
   const posVals = all.filter(v => v > 0);
@@ -697,6 +764,7 @@ function draw() {
   drawLine(br1p, C.safe,  2, false);
   drawLine(br2p, C.risky, 2, false);
   drawLine(brFlatp, C.flat, 1.5, false);
+  drawLine(brSSSp, C.sss, 1.5, false);
   if (brKp) drawLine(brKp, C.kelly, 1.5, true);
 
   // Win/loss strip — rects right above the x-axis
@@ -719,7 +787,7 @@ function draw() {
   // ── wipeout markers on x-axis ──
   if (showWO) {
     const axY = mt + ph, s = 7;
-    const wos = [[wo1, C.safe], [wo2, C.risky], [woFlat, C.flat]];
+    const wos = [[wo1, C.safe], [wo2, C.risky], [woFlat, C.flat], [woSSS, C.sss]];
     if (brK) wos.push([woK, C.kelly]);
     ctx.lineWidth = 2.5;
     wos.forEach(([idx, color]) => {
@@ -799,6 +867,7 @@ function draw() {
     ...(brK ? [{ color: C.kelly, label: `Kelly f*=${fStar.toFixed(2)}`, dashed: true }] : []),
     { color: C.risky, label: `${t('legendRisky')} ${f2.toFixed(2)}` },
     { color: C.flat,  label: `${t('legendFlat')} $${bet}/${t('roundAxis').toLowerCase()}` },
+    { color: C.sss,   label: `SSS $${sssBet}` },
     { color: C.growth, label: `${rate}${t('legendPerYear')}` },
   ];
   ctx.font = '11px system-ui, sans-serif';
@@ -820,6 +889,7 @@ function draw() {
     { y: br1p[br1p.length - 1],   color: C.safe,  text: `${t('rightSafe')}: ${fmtVal(br1p[br1p.length - 1])}` },
     { y: br2p[br2p.length - 1],   color: C.risky, text: `${t('rightRisky')}: ${fmtVal(br2p[br2p.length - 1])}` },
     { y: brFlat[flatEnd],          color: C.flat,  text: `$${bet}: ${fmtVal(brFlat[flatEnd])}` },
+    { y: brSSS[sssEnd],            color: C.sss,   text: `SSS: ${fmtSigned(brSSS[sssEnd])}` },
     ...(brKp ? [{ y: brKp[brKp.length - 1], color: C.kelly, text: `${t('rightKelly')}: ${fmtVal(brKp[brKp.length - 1])}` }] : []),
     { y: brGrowth[n], color: C.growth, text: `${rate}${t('rightPerYear')}: ${fmtVal(brGrowth[n])}` },
   ].filter(d => d.y >= 0.1);
@@ -902,16 +972,33 @@ function buildTimespanButtons() {
   });
 }
 
+function updateWipeoutRange() {
+  const cap = Math.round(getStart());
+  const sl = $('wipeout-sl'), num = $('wipeout-num');
+  sl.min = 0; sl.max = cap; num.min = 0; num.max = cap;
+  const v = clamp(parseFloat(sl.value) || 0, 0, cap);
+  sl.value = v; num.value = v;
+}
+
 function updateBetMax() {
   const maxBet = Math.max(1, Math.round(getStart()));
-  const sl = $('bet-sl');
+  const sl = $('bet-sl'), num = $('bet-num');
   sl.max = maxBet;
-  $('bet-num').max = maxBet;
-  if (parseFloat(sl.value) > maxBet) {
-    sl.value = maxBet;
-    $('bet-num').value = maxBet;
-  }
-  $('bet-annot').textContent = t('betAmountAnnot')($('bet-sl').value);
+  num.max = maxBet;
+  const def = Math.max(1, Math.round(maxBet * 0.02));
+  sl.value = def;
+  num.value = def;
+  $('bet-annot').textContent = t('betAmountAnnot')(sl.value);
+}
+
+function updateSSSMax() {
+  const maxBet = Math.max(1, Math.round(getStart()));
+  const sl = $('sss-sl'), num = $('sss-num');
+  sl.max = maxBet;
+  num.max = maxBet;
+  const def = Math.max(1, Math.round(maxBet * 0.02));
+  sl.value = def;
+  num.value = def;
 }
 
 function reroll() {
@@ -924,17 +1011,40 @@ function init() {
   applyI18n();
   buildTimespanButtons();
 
+  // Enter commits the typed expression (change fires on blur)
+  document.querySelectorAll('.num-input').forEach(el => {
+    el.addEventListener('keydown', e => {
+      if (e.key === 'Enter') el.blur();
+    });
+  });
+
   // Capital (log slider ↔ plain $ number input)
   $('capital-sl').addEventListener('input', () => {
     $('capital-num').value = Math.round(getStart() * 100) / 100;
     updateBetMax();
+    updateWipeoutRange();
+    updateSSSMax();
     draw();
   });
   $('capital-num').addEventListener('change', () => {
-    const v = clamp(parseFloat($('capital-num').value) || 100, 100, 1000000);
+    const v = clamp(evalExpr($('capital-num').value) || 100, 100, 1000000);
     $('capital-sl').value = Math.log10(v);
     $('capital-num').value = v;
     updateBetMax();
+    updateWipeoutRange();
+    updateSSSMax();
+    draw();
+  });
+
+  // wipeout threshold
+  $('wipeout-sl').addEventListener('input', () => {
+    $('wipeout-num').value = $('wipeout-sl').value;
+    draw();
+  });
+  $('wipeout-num').addEventListener('change', () => {
+    const cap = Math.round(getStart());
+    const v = clamp(evalExpr($('wipeout-num').value) || 0, 0, cap);
+    $('wipeout-sl').value = v; $('wipeout-num').value = v;
     draw();
   });
 
@@ -945,7 +1055,7 @@ function init() {
     draw();
   });
   $('chance-num').addEventListener('change', () => {
-    const v = clamp(parseFloat($('chance-num').value) || 1, 0, 100);
+    const v = clamp(evalExpr($('chance-num').value) || 1, 0, 100);
     $('chance-sl').value = v; $('chance-num').value = v;
     setFracs(getP(), getB());
     draw();
@@ -958,7 +1068,7 @@ function init() {
     draw();
   });
   $('b-num').addEventListener('change', () => {
-    const v = clamp(parseFloat($('b-num').value) || 1.0, 0.01, 10000);
+    const v = clamp(evalExpr($('b-num').value) || 1.0, 0.01, 10000);
     $('b-sl').value = Math.log10(v);
     $('b-num').value = v;
     setFracs(getP(), getB());
@@ -975,7 +1085,7 @@ function init() {
     draw();
   });
   $('rounds-num').addEventListener('change', () => {
-    setRounds(parseFloat($('rounds-num').value) || 1);
+    setRounds(evalExpr($('rounds-num').value) || 1);
     $('timespan-btns').querySelectorAll('button').forEach(b => b.classList.remove('active'));
     activeSpan = null;
     draw();
@@ -989,7 +1099,7 @@ function init() {
     draw();
   });
   $('f1-num').addEventListener('change', () => {
-    const v = clamp(parseFloat($('f1-num').value) || 0, 0, 100);
+    const v = clamp(evalExpr($('f1-num').value) || 0, 0, 100);
     $('f1-sl').value = v; $('f1-num').value = v;
     updateBetFracAnnot('f1', v / 100);
     draw();
@@ -1001,7 +1111,7 @@ function init() {
     draw();
   });
   $('f2-num').addEventListener('change', () => {
-    const v = clamp(parseFloat($('f2-num').value) || 0, 0, 100);
+    const v = clamp(evalExpr($('f2-num').value) || 0, 0, 100);
     $('f2-sl').value = v; $('f2-num').value = v;
     updateBetFracAnnot('f2', v / 100);
     draw();
@@ -1013,7 +1123,7 @@ function init() {
   });
   $('bet-num').addEventListener('change', () => {
     const maxBet = parseFloat($('bet-sl').max);
-    const v = clamp(parseFloat($('bet-num').value) || 1, 1, maxBet);
+    const v = clamp(evalExpr($('bet-num').value) || 1, 1, maxBet);
     $('bet-sl').value = v; $('bet-num').value = v;
     $('bet-annot').textContent = t('betAmountAnnot')(v);
     draw();
@@ -1022,8 +1132,16 @@ function init() {
     $('rate-num').value = $('rate-sl').value; draw();
   });
   $('rate-num').addEventListener('change', () => {
-    const v = clamp(parseFloat($('rate-num').value) || 0, 0, 100);
+    const v = clamp(evalExpr($('rate-num').value) || 0, 0, 100);
     $('rate-sl').value = v; $('rate-num').value = v; draw();
+  });
+  $('sss-sl').addEventListener('input', () => {
+    $('sss-num').value = getSSS(); draw();
+  });
+  $('sss-num').addEventListener('change', () => {
+    const maxBet = parseFloat($('sss-sl').max);
+    const v = clamp(evalExpr($('sss-num').value) || 1, 1, maxBet);
+    $('sss-sl').value = v; $('sss-num').value = v; draw();
   });
 
   $('log-btns').querySelectorAll('button').forEach(btn => {
@@ -1035,7 +1153,10 @@ function init() {
     });
   });
   $('wipeout-chk').addEventListener('change', draw);
-  $('reroll-btn').addEventListener('click', reroll);
+  $('reroll-btn').addEventListener('click', () => {
+    reroll();
+    $('reroll-btn').blur();
+  });
 
   $('lang-btns').querySelectorAll('button').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -1062,6 +1183,8 @@ function init() {
 
   setFracs(getP(), getB());
   updateBetMax();
+  updateWipeoutRange();
+  updateSSSMax();
   reroll(); // initial roll + draw
 }
 
