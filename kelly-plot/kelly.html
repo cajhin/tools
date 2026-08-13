@@ -136,6 +136,70 @@ h1 {
   text-align: center;
 }
 .subtitle a { color: #4a90d9; }
+
+/* ── tabs ── */
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin-top: 14px;
+  border-top: 1px solid #d0d0d0;
+  padding-top: 10px;
+  justify-content: center;
+}
+.tabs button {
+  padding: 6px 22px;
+  font-size: 13px;
+  cursor: pointer;
+  border: 1px solid #bbb;
+  border-radius: 4px;
+  background: #f5f5f5;
+  color: #333;
+}
+.tabs button:hover { background: #e8e8e8; }
+.tabs button.active {
+  background: #4a90d9;
+  color: #fff;
+  border-color: #4a90d9;
+}
+.hidden { display: none; }
+
+/* ── probability page ── */
+#strat-btns button { width: auto; padding: 4px 12px; }
+#rerun-btn {
+  margin-left: 14px;
+  background: #fff;
+  border-color: #4a90d9;
+  color: #4a90d9;
+}
+#rerun-btn:hover { background: #eaf2fb; }
+#prob-status {
+  margin-left: 8px;
+  color: #888;
+  font-size: 12px;
+  white-space: normal;
+}
+#prob-chart {
+  display: block;
+  margin-top: 8px;
+  border: 1px solid #ddd;
+  border-radius: 2px;
+}
+#prob-stats {
+  margin-top: 8px;
+  padding-left: 158px;
+  color: #444;
+  font-size: 12px;
+  line-height: 1.6;
+}
+#prob-stats b { color: #222; }
+#prob-stats table { border-collapse: collapse; }
+#prob-stats th, #prob-stats td {
+  padding: 2px 14px 2px 0;
+  text-align: right;
+  white-space: nowrap;
+}
+#prob-stats th { color: #888; font-weight: 500; }
+#prob-stats th:first-child, #prob-stats td:first-child { text-align: left; }
 </style>
 </head>
 <body>
@@ -151,6 +215,8 @@ h1 {
 
 <h1 data-i18n="title">Heads or Tales, with a crooked coin (How to Gamble)</h1>
 <div class="subtitle" id="subtitle"></div>
+
+<div id="page-setup">
 
 <!-- ── controls ── -->
 <div style="border:1px solid #d0d0d0; border-radius:5px; padding:2px 0; margin-bottom:3px;">
@@ -277,7 +343,47 @@ h1 {
   <label><input type="checkbox" id="wipeout-chk" checked> <span data-i18n="wipeoutLbl">Show wipeout</span> <span id="wipeout-chk-val" style="color:#888;"></span></label>
 </div>
 
+</div><!-- /page-setup -->
+
+<div id="page-prob" class="hidden">
+
+<div style="border:1px solid #d0d0d0; border-radius:5px; padding:2px 0; margin-bottom:3px;">
+<div class="row" style="height:auto; margin-bottom:6px;">
+  <span class="lbl"></span>
+  <span data-i18n="probIntro" style="color:#888; font-size:12px; max-width:620px; white-space:normal;"></span>
 </div>
+
+<div class="row">
+  <span class="lbl" data-i18n="lblTarget">Target $</span>
+  <input type="text" class="num-input" id="target-num" value="10000" style="margin-left:0">
+  <span id="target-annot" style="margin-left:8px; color:#888; font-size:12px; white-space:normal"></span>
+</div>
+
+<div class="row">
+  <span class="lbl" data-i18n="lblRuns">Runs</span>
+  <input type="text" class="num-input" id="runs-num" value="10000" style="margin-left:0">
+  <span id="runs-annot" style="margin-left:8px; color:#888; font-size:12px; white-space:normal"></span>
+</div>
+
+<div class="row timespan-row" style="margin-bottom:0">
+  <span class="lbl" data-i18n="lblStrategy">Strategy</span>
+  <div class="btn-group" id="strat-btns"></div>
+  <span id="prob-status"></span>
+</div>
+</div>
+
+<canvas id="prob-chart" width="940" height="430"></canvas>
+
+<div id="prob-stats"></div>
+
+</div><!-- /page-prob -->
+
+<div class="tabs" id="tab-btns">
+  <button data-page="setup" class="active" data-i18n="tabSetup">Setup</button>
+  <button data-page="prob" data-i18n="tabProb">Probability</button>
+</div>
+
+</div><!-- /container -->
 
 <script>
 // ── constants ────────────────────────────────────────────────────────────────
@@ -346,6 +452,33 @@ const I18N = {
     rightRisky: "risky",
     rightKelly: "kelly",
     rightPerYear: "%/y",
+    tabSetup: "Setup",
+    tabProb: "Probability",
+    probIntro: "Replays the Setup game many times with fresh coinflips, and shows where you end up: bankrupt, somewhere in between, or at your target. Chance, reward, start capital, wipeout, bet sizes and rounds all come from the Setup tab.",
+    lblTarget: "Target $",
+    lblRuns: "Runs",
+    lblStrategy: "Strategy",
+    targetAnnot: (start, mult) => `cash out once the bankroll reaches this (${mult}× the $${start} start capital)`,
+    runsAnnot: (rounds) => `how many independent games to play, each ${rounds} rounds long`,
+    probPick: "pick a strategy to run the simulation",
+    probRunning: "running…",
+    probStratNames: {
+      f1: "Safe (half Kelly)", kelly: "Kelly", f2: "Risky",
+      flat: "Fixed bet", sss: "SSS",
+    },
+    rerunBtn: "Run again",
+    outBankrupt: "bankrupt",
+    outTarget: "target",
+    probTitle: (runs, strat, rounds) => `${runs} runs × ${rounds} rounds — ${strat}`,
+    axisOutcome: "Final bankroll ($)",
+    axisShare: "share of runs",
+    statTarget: "reached target",
+    statBankrupt: "bankrupt",
+    statBetween: "in between",
+    statAvg: "avg outcome",
+    statMedian: "median outcome",
+    statMedianRoundsToTarget: "median rounds to target",
+    statNever: "n/a",
     locale: 'en',
   },
   de: {
@@ -399,6 +532,33 @@ const I18N = {
     rightRisky: "riskant",
     rightKelly: "kelly",
     rightPerYear: "%/Jahr",
+    tabSetup: "Setup",
+    tabProb: "Wahrscheinlichkeit",
+    probIntro: "Spielt das Setup-Spiel viele Male mit neuen Münzwürfen und zeigt, wo du landest: pleite, irgendwo dazwischen, oder am Ziel. Chance, Gewinn, Startkapital, Pleitegrenze, Einsätze und Runden kommen alle aus dem Setup-Tab.",
+    lblTarget: "Ziel $",
+    lblRuns: "Durchläufe",
+    lblStrategy: "Strategie",
+    targetAnnot: (start, mult) => `aussteigen, sobald das Kapital das erreicht (${mult}× des Startkapitals von $${start})`,
+    runsAnnot: (rounds) => `wie viele unabhängige Spiele gespielt werden, jedes ${rounds} Runden lang`,
+    probPick: "Strategie wählen, um die Simulation zu starten",
+    probRunning: "läuft…",
+    probStratNames: {
+      f1: "Sicher (halber Kelly)", kelly: "Kelly", f2: "Riskant",
+      flat: "Fixer Einsatz", sss: "SSS",
+    },
+    rerunBtn: "Nochmal spielen",
+    outBankrupt: "pleite",
+    outTarget: "Ziel",
+    probTitle: (runs, strat, rounds) => `${runs} Durchläufe × ${rounds} Runden — ${strat}`,
+    axisOutcome: "Endkapital ($)",
+    axisShare: "Anteil der Durchläufe",
+    statTarget: "Ziel erreicht",
+    statBankrupt: "pleite",
+    statBetween: "dazwischen",
+    statAvg: "Ø Ergebnis",
+    statMedian: "Median-Ergebnis",
+    statMedianRoundsToTarget: "Median-Runden bis Ziel",
+    statNever: "n/v",
     locale: 'de',
   },
 };
@@ -425,6 +585,9 @@ function applyI18n() {
   });
   $('lang-btns').querySelectorAll('button').forEach(b => {
     b.classList.toggle('active', b.dataset.val === lang);
+  });
+  $('strat-btns').querySelectorAll('button[data-key]').forEach(btn => {
+    btn.textContent = t('probStratNames')[btn.dataset.key];
   });
 }
 
@@ -596,11 +759,20 @@ const getRate  = () => parseFloat($('rate-sl').value);
 const getSSS   = () => parseFloat($('sss-sl').value);
 let roundsValue = 1;
 const getN     = () => roundsValue;
-const getStart = () => Math.pow(10, parseFloat($('capital-sl').value));
+// Authoritative start capital: the log slider only has step=0.001 resolution, so
+// deriving it from the slider would turn a typed 50000 into 50003.45.
+let startValue = 1000;
+const getStart = () => startValue;
 const getWO    = () => $('wipeout-chk').checked;
 const getWOThreshold = () => parseFloat($('wipeout-num').value) || 0;
 
 function clamp(v, lo, hi) { return Math.min(hi, Math.max(lo, v)); }
+
+function roundSig(v, digits = 3) {
+  if (!v) return 0;
+  const mag = Math.pow(10, Math.floor(Math.log10(Math.abs(v))) - digits + 1);
+  return Math.round(v / mag) * mag;
+}
 
 // Evaluates simple arithmetic typed into a number field, e.g. "1/37" or "1/15+5*3-1".
 // Whitelisting characters before Function() keeps this to digits/operators only.
@@ -624,6 +796,7 @@ function setRounds(n) {
 
 // ── draw ─────────────────────────────────────────────────────────────────────
 function draw() {
+  setupVersion++; // any Setup change invalidates a Probability run
   const canvas = $('chart');
   const ctx = canvas.getContext('2d');
   const W = canvas.width, H = canvas.height;
@@ -941,6 +1114,339 @@ function draw() {
   }
 }
 
+// ── probability page ─────────────────────────────────────────────────────────
+const STRATS = ['f1', 'kelly', 'f2', 'flat', 'sss'];
+const STRAT_COLOR = { f1: C.safe, kelly: C.kelly, f2: C.risky, flat: C.flat, sss: C.sss };
+const selectedStrats = new Set(); // 0..all strategies, checkbox style
+let lastResult = null; // { series[{kind,outcomes}], runs, rounds, cfg, version }
+let setupVersion = 0;  // bumped on every Setup redraw, so stale results get dropped
+
+const getRuns   = () => clamp(Math.round(evalExpr($('runs-num').value) || 1), 1, 100000);
+const getTarget = () => Math.max(evalExpr($('target-num').value) || 0, getStart() * 1.0001);
+
+function probCfg() {
+  const p = getP(), b = getB(), q = 1 - p;
+  return {
+    p, b,
+    n: getN(),
+    start: getStart(),
+    target: getTarget(),
+    wo: getWOThreshold(),
+    f1: getF1(),
+    fStar: b > 0 ? Math.max((b * p - q) / b, 0) : 0,
+    f2: getF2(),
+    bet: getBet(),
+    sssBase: getSSS(),
+  };
+}
+
+// One game: flip until the target is hit, the bankroll is wiped out, or rounds run out.
+function runOnce(kind, cfg) {
+  const { p, b, n, start, target, wo, f1, fStar, f2, bet, sssBase } = cfg;
+  let br = start, sssBet = sssBase;
+  for (let i = 0; i < n; i++) {
+    const win = Math.random() < p;
+    if (kind === 'flat') {
+      const a = Math.min(bet, Math.max(br, 0));
+      br += win ? b * a : -a;
+    } else if (kind === 'sss') {
+      const a = Math.min(sssBet, Math.max(br, 0));
+      if (win) { br += b * a; sssBet = sssBase; }
+      else     { br -= a;     sssBet = a * 2; }
+    } else {
+      const f = kind === 'f1' ? f1 : kind === 'f2' ? f2 : fStar;
+      br = win ? br * (1 + b * f) : br * (1 - f);
+    }
+    if (br <= wo)     return { end: br, outcome: 'bankrupt', rounds: i + 1 };
+    if (br >= target) return { end: br, outcome: 'target',   rounds: i + 1 };
+  }
+  return { end: br, outcome: 'between', rounds: n };
+}
+
+function runSelected() {
+  const kinds = STRATS.filter(k => selectedStrats.has(k));
+  if (!kinds.length) { lastResult = null; drawProb(); updateProbAnnots(); return; }
+  runStrategies(kinds);
+  updateProbAnnots();
+}
+
+function runStrategies(kinds) {
+  const cfg = probCfg();
+  const runs = getRuns(); // each strategy gets the full count, whatever the round length
+  const series = kinds.map(k => {
+    const outcomes = new Array(runs);
+    for (let r = 0; r < runs; r++) outcomes[r] = runOnce(k, cfg);
+    return { kind: k, outcomes };
+  });
+
+  lastResult = { series, runs, rounds: cfg.n, cfg, version: setupVersion };
+  drawProb();
+}
+
+function median(arr) {
+  if (!arr.length) return NaN;
+  const s = [...arr].sort((a, b) => a - b);
+  const m = s.length >> 1;
+  return s.length % 2 ? s[m] : (s[m-1] + s[m]) / 2;
+}
+
+function drawProb() {
+  const canvas = $('prob-chart');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  if (!lastResult) {
+    ctx.fillStyle = '#999';
+    ctx.font = '13px system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(t('probPick'), W / 2, H / 2);
+    $('prob-stats').textContent = '';
+    return;
+  }
+
+  const { series, runs, rounds, cfg } = lastResult;
+  const multi = series.length > 1;
+  const nbins = multi ? 12 : 24;
+
+  // ── bucket the outcomes, per strategy ──
+  const lo = Math.max(cfg.wo, cfg.start / 1000, 0.01);
+  const hi = cfg.target;
+  const logLo = Math.log10(lo), logHi = Math.log10(Math.max(hi, lo * 10));
+
+  const stats = series.map(({ kind, outcomes }) => {
+    const bins = new Array(nbins).fill(0);
+    let nBankrupt = 0, nTarget = 0;
+    const betweenVals = [], targetRounds = [];
+    outcomes.forEach(o => {
+      if (o.outcome === 'bankrupt') { nBankrupt++; return; }
+      if (o.outcome === 'target')   { nTarget++; targetRounds.push(o.rounds); return; }
+      betweenVals.push(o.end);
+      const v = Math.max(o.end, lo);
+      const idx = clamp(Math.floor((Math.log10(v) - logLo) / (logHi - logLo) * nbins), 0, nbins - 1);
+      bins[idx]++;
+    });
+    const ends = outcomes.map(o => o.outcome === 'bankrupt' ? 0 : o.end);
+    return {
+      kind, color: STRAT_COLOR[kind],
+      shares: bins.map(c => c / runs),
+      nBankrupt, nTarget, nBetween: betweenVals.length,
+      avgEnd: ends.reduce((a, v) => a + v, 0) / (ends.length || 1),
+      medEnd: median(ends), medRounds: median(targetRounds),
+    };
+  });
+
+  const maxShare = 1; // fixed 0..100% so runs stay comparable across strategies
+
+  // ── layout ──
+  const ml = 70, mr = 30, mt = 40, mb = 58;
+  const pw = W - ml - mr, ph = H - mt - mb;
+  const slots = nbins + 2;          // bankrupt + bins + target
+  const gap = 10;                   // extra space around the two special bars
+  const slotW = (pw - 2 * gap) / slots;
+  const slotX = i => ml + (i === 0 ? 0 : gap) + i * slotW + (i === slots - 1 ? gap : 0);
+  const yS = share => mt + ph - (share / maxShare) * ph;
+
+  // ── grid + y ticks ──
+  const yTicks = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
+  ctx.strokeStyle = '#ebebeb';
+  ctx.lineWidth = 1;
+  yTicks.forEach(v => {
+    const cy = yS(v);
+    ctx.beginPath(); ctx.moveTo(ml, cy); ctx.lineTo(ml + pw, cy); ctx.stroke();
+  });
+
+  // ── separators: bankrupt slot on the left, target slot on the right ──
+  const sepBankruptX = ml + slotW + gap / 2, sepTargetX = slotX(slots - 1) - gap / 2;
+  ctx.lineWidth = 1;
+  ctx.setLineDash([5, 4]);
+  [[sepBankruptX, '#e6b3b3'], [sepTargetX, '#aacfaa']].forEach(([lx, col]) => {
+    ctx.strokeStyle = col;
+    ctx.beginPath(); ctx.moveTo(lx, mt); ctx.lineTo(lx, mt + ph); ctx.stroke();
+  });
+  ctx.setLineDash([]);
+
+  // ── bars: one group per slot, half a slot wide, series packed flush inside it ──
+  const groupW = slotW / 2;
+  const barW = groupW / series.length;
+  function bar(i, s, share, fill, alwaysLabel) {
+    if (share <= 0) return;
+    const x = slotX(i) + (slotW - groupW) / 2 + s * barW, y = yS(share), h = mt + ph - y;
+    ctx.fillStyle = fill;
+    ctx.fillRect(x, y, Math.max(barW, 1), h);
+    // in multi mode the grouped bars are too narrow to label — the table below covers it
+    if (!multi && (alwaysLabel || share >= 0.05)) {
+      ctx.fillStyle = '#333';
+      ctx.font = '10px system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText((share * 100).toFixed(share < 0.1 ? 1 : 0) + '%', x + barW / 2, y - 3);
+    }
+  }
+
+  stats.forEach((st, s) => {
+    bar(0, s, st.nBankrupt / runs, st.color, !multi);
+    st.shares.forEach((sh, i) => bar(i + 1, s, sh, st.color));
+    bar(slots - 1, s, st.nTarget / runs, st.color, !multi);
+  });
+
+  // start-capital marker
+  const startSlot = 1 + (Math.log10(Math.max(cfg.start, lo)) - logLo) / (logHi - logLo) * nbins;
+  const sx = ml + gap + startSlot * slotW;
+  if (sx > ml && sx < ml + pw) {
+    ctx.strokeStyle = C.start;
+    ctx.setLineDash([5, 4]);
+    ctx.beginPath(); ctx.moveTo(sx, mt); ctx.lineTo(sx, mt + ph); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#888';
+    ctx.font = '10px system-ui, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(`start $${fmtVal(cfg.start)}`, sx + 3, mt + 10);
+  }
+
+  // ── axes ──
+  ctx.strokeStyle = '#aaa';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(ml, mt);      ctx.lineTo(ml, mt + ph);      ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(ml, mt + ph); ctx.lineTo(ml + pw, mt + ph); ctx.stroke();
+
+  ctx.fillStyle = '#444';
+  ctx.font = '11px system-ui, sans-serif';
+  ctx.textAlign = 'right';
+  yTicks.forEach(v => {
+    const cy = yS(v);
+    ctx.beginPath(); ctx.moveTo(ml - 4, cy); ctx.lineTo(ml, cy); ctx.stroke();
+    ctx.fillText((v * 100).toFixed(0) + '%', ml - 7, cy + 4);
+  });
+
+  // ── bankrupt / target labels, at the top next to their separator ──
+  ctx.font = '10px system-ui, sans-serif';
+  ctx.fillStyle = '#888';
+  ctx.textAlign = 'right';
+  ctx.fillText(t('outBankrupt'), sepBankruptX - 3, mt + 10);
+  ctx.textAlign = 'left';
+  ctx.fillText(`${t('outTarget')} $${fmtVal(cfg.target)}`, sepTargetX + 3, mt + 10);
+
+  // ── x labels ──
+  ctx.font = '11px system-ui, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#444';
+  logTicks(Math.pow(10, logLo), Math.pow(10, logHi)).forEach(v => {
+    const slot = 1 + (Math.log10(v) - logLo) / (logHi - logLo) * nbins;
+    const cx = ml + gap + slot * slotW;
+    if (cx < ml + slotW || cx > ml + pw - slotW) return;
+    ctx.beginPath(); ctx.strokeStyle = '#aaa';
+    ctx.moveTo(cx, mt + ph); ctx.lineTo(cx, mt + ph + 4); ctx.stroke();
+    ctx.fillText(fmtAxis(v), cx, mt + ph + 16);
+  });
+
+  ctx.fillStyle = '#666';
+  ctx.font = '12px system-ui, sans-serif';
+  ctx.fillText(t('axisOutcome'), ml + pw / 2, H - 6);
+
+  ctx.save();
+  ctx.translate(13, mt + ph / 2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.textAlign = 'center';
+  ctx.fillText(t('axisShare'), 0, 0);
+  ctx.restore();
+
+  // ── title ──
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#222';
+  ctx.font = '13px system-ui, sans-serif';
+  const stratLabel = series.map(s => t('probStratNames')[s.kind]).join(' · ');
+  ctx.fillText(t('probTitle')(runs.toLocaleString(t('locale')), stratLabel, rounds.toLocaleString(t('locale'))), ml + pw / 2, 23);
+
+  // ── legend (multi only) ──
+  if (multi) {
+    ctx.font = '11px system-ui, sans-serif';
+    ctx.textAlign = 'left';
+    let lx = ml + 8, ly = mt + 28; // below the bankrupt/target/start label row
+    stats.forEach(st => {
+      ctx.fillStyle = st.color;
+      ctx.fillRect(lx, ly - 7, 9, 9);
+      ctx.fillText(t('probStratNames')[st.kind], lx + 14, ly + 1);
+      ly += 15;
+    });
+  }
+
+  // ── stats ──
+  const pct = x => (x / runs * 100).toFixed(1) + '%';
+  const rounds2 = m => Number.isFinite(m) ? Math.round(m).toLocaleString(t('locale')) : t('statNever');
+  // outcome: absolute, as a share of start capital, and annualized (252 rounds = 1y)
+  const fmtPct = x => Math.abs(x) >= 10 ? x.toFixed(0) : x.toFixed(1);
+  const outcome = v => {
+    const rel = v / cfg.start;
+    const years = Math.max(rounds, 1) / 252;
+    const yearly = rel > 0 ? (Math.pow(rel, 1 / years) - 1) * 100 : -100;
+    return `$${fmtSigned(v)} (${fmtPct(rel * 100)}% | ${fmtPct(yearly)}${t('legendPerYear')})`;
+  };
+
+  const head = ['', t('statTarget'), t('statBankrupt'), t('statBetween'), t('statAvg'), t('statMedian'), t('statMedianRoundsToTarget')];
+  const rows = stats.map(st => `<tr>
+    <td style="color:${st.color}; font-weight:600">${t('probStratNames')[st.kind]}</td>
+    <td>${pct(st.nTarget)}</td><td>${pct(st.nBankrupt)}</td><td>${pct(st.nBetween)}</td>
+    <td>${outcome(st.avgEnd)}</td><td>${outcome(st.medEnd)}</td><td>${rounds2(st.medRounds)}</td></tr>`).join('');
+  $('prob-stats').innerHTML =
+    `<table><thead><tr>${head.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+function updateProbAnnots() {
+  const start = getStart(), target = getTarget();
+  $('target-annot').textContent = t('targetAnnot')(fmtVal(start), (target / start).toFixed(1));
+  $('runs-annot').textContent = t('runsAnnot')(getN().toLocaleString(t('locale')));
+  $('prob-status').textContent = selectedStrats.size ? '' : t('probPick');
+}
+
+// Runs after letting the "running…" label paint, since the simulation is synchronous.
+function runSoon() {
+  $('prob-status').textContent = t('probRunning');
+  setTimeout(runSelected, 0);
+}
+
+function buildStrategyButtons() {
+  const container = $('strat-btns');
+  container.textContent = '';
+  STRATS.forEach(kind => {
+    const btn = document.createElement('button');
+    btn.dataset.key = kind;
+    btn.textContent = t('probStratNames')[kind];
+    btn.addEventListener('click', () => {
+      if (selectedStrats.has(kind)) selectedStrats.delete(kind);
+      else selectedStrats.add(kind);
+      btn.classList.toggle('active', selectedStrats.has(kind));
+      runSoon();
+    });
+    container.appendChild(btn);
+  });
+
+  const rerun = document.createElement('button');
+  rerun.id = 'rerun-btn';
+  rerun.dataset.i18n = 'rerunBtn';
+  rerun.textContent = t('rerunBtn');
+  rerun.addEventListener('click', () => { rerun.blur(); runSoon(); });
+  container.appendChild(rerun);
+}
+
+function clearProbSelection() {
+  selectedStrats.clear();
+  lastResult = null;
+  $('strat-btns').querySelectorAll('button[data-key]').forEach(b => b.classList.remove('active'));
+}
+
+function showPage(page) {
+  $('page-setup').classList.toggle('hidden', page !== 'setup');
+  $('page-prob').classList.toggle('hidden', page !== 'prob');
+  $('tab-btns').querySelectorAll('button').forEach(b =>
+    b.classList.toggle('active', b.dataset.page === page));
+  if (page === 'prob') {
+    // Setup values changed since the last run — the old outcomes no longer apply
+    if (lastResult && lastResult.version !== setupVersion) clearProbSelection();
+    updateProbAnnots();
+    drawProb();
+  }
+}
+
 // ── UI wiring ────────────────────────────────────────────────────────────────
 function updateBetFracAnnot(id, frac) {
   $(`${id}-annot`).textContent = t('betFracAnnot')(frac * 100);
@@ -1007,9 +1513,17 @@ function reroll() {
   draw();
 }
 
+// Target follows the start capital (10×) until the user types their own.
+let targetTouched = false;
+function updateTargetDefault() {
+  if (targetTouched) return;
+  $('target-num').value = Math.round(getStart() * 10);
+}
+
 function init() {
   applyI18n();
   buildTimespanButtons();
+  buildStrategyButtons();
 
   // Enter commits the typed expression (change fires on blur)
   document.querySelectorAll('.num-input').forEach(el => {
@@ -1020,19 +1534,23 @@ function init() {
 
   // Capital (log slider ↔ plain $ number input)
   $('capital-sl').addEventListener('input', () => {
-    $('capital-num').value = Math.round(getStart() * 100) / 100;
+    startValue = roundSig(Math.pow(10, parseFloat($('capital-sl').value)));
+    $('capital-num').value = startValue;
     updateBetMax();
     updateWipeoutRange();
     updateSSSMax();
+    updateTargetDefault();
     draw();
   });
   $('capital-num').addEventListener('change', () => {
     const v = clamp(evalExpr($('capital-num').value) || 100, 100, 1000000);
+    startValue = v;
     $('capital-sl').value = Math.log10(v);
     $('capital-num').value = v;
     updateBetMax();
     updateWipeoutRange();
     updateSSSMax();
+    updateTargetDefault();
     draw();
   });
 
@@ -1166,12 +1684,34 @@ function init() {
       setFracs(getP(), getB());
       updateBetMax();
       draw();
+      updateProbAnnots();
+      drawProb();
     });
+  });
+
+  // ── tabs ──
+  $('tab-btns').querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', () => showPage(btn.dataset.page));
+  });
+
+  // ── probability inputs ──
+  $('target-num').addEventListener('change', () => {
+    targetTouched = true;
+    const v = clamp(evalExpr($('target-num').value) || 0, getStart() * 1.01, 1e15);
+    $('target-num').value = Math.round(v * 100) / 100;
+    clearProbSelection();
+    updateProbAnnots();
+    drawProb();
+  });
+  $('runs-num').addEventListener('change', () => {
+    $('runs-num').value = getRuns();
+    updateProbAnnots();
   });
 
   // arrow keys step rounds ±1 when no control has focus
   window.addEventListener('keydown', (e) => {
     if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    if ($('page-setup').classList.contains('hidden')) return;
     const active = document.activeElement;
     if (active && (active.tagName === 'INPUT' || active.tagName === 'BUTTON')) return;
     e.preventDefault();
@@ -1185,6 +1725,7 @@ function init() {
   updateBetMax();
   updateWipeoutRange();
   updateSSSMax();
+  updateTargetDefault();
   reroll(); // initial roll + draw
 }
 
