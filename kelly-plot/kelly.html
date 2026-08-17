@@ -34,6 +34,14 @@ body {
   color: #333;
 }
 .lbl.grey { color: #888; font-size: 12px; }
+.grp-title {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #888;
+  padding: 2px 0 3px 10px;
+}
 input[type=range] {
   width: 380px;
   flex-shrink: 0;
@@ -220,6 +228,7 @@ h1 {
 
 <!-- ── controls ── -->
 <div style="border:1px solid #d0d0d0; border-radius:5px; padding:2px 0; margin-bottom:3px;">
+<div class="grp-title" data-i18n="grpScenario">Scenario</div>
 <div class="row" style="height:auto; margin-bottom:6px;">
   <span class="lbl"></span>
   <span data-i18n="edgeComment" style="color:#888; font-size:12px; max-width:620px; white-space:normal;"></span>
@@ -245,14 +254,6 @@ h1 {
   <span id="kelly-formula-annot" style="color:#888; font-size:12px; white-space:normal"></span>
 </div>
 
-<div class="row" style="margin-bottom:0">
-  <span class="lbl"></span>
-  <button id="reroll-btn" data-i18n="rerollBtn">Roll again</button>
-  <span data-i18n="rerollAnnot" style="margin-left:8px; color:#888; font-size:12px; white-space:normal"></span>
-</div>
-</div>
-
-<div style="border:1px solid #d0d0d0; border-radius:5px; padding:2px 0; margin-bottom:3px;">
 <div class="row">
   <span class="lbl" data-i18n="lblCapital">Start capital</span>
   <input type="range" id="capital-sl" min="2" max="6" step="0.001" value="3">
@@ -266,6 +267,15 @@ h1 {
   <span data-i18n="wipeoutAnnot" style="margin-left:8px; color:#888; font-size:12px; white-space:normal;"></span>
 </div>
 
+<div class="row" style="margin-bottom:0">
+  <span class="lbl"></span>
+  <button id="reroll-btn" data-i18n="rerollBtn">Roll again</button>
+  <span data-i18n="rerollAnnot" style="margin-left:8px; color:#888; font-size:12px; white-space:normal"></span>
+</div>
+</div>
+
+<div style="border:1px solid #d0d0d0; border-radius:5px; padding:2px 0; margin-bottom:3px;">
+<div class="grp-title" data-i18n="grpStrategies">Strategies</div>
 <div class="row">
   <span class="lbl" data-i18n="lblF1" style="color:steelblue">Safe bet</span>
   <input type="range" id="f1-sl" min="0" max="100" step="0.01" value="5">
@@ -304,15 +314,24 @@ h1 {
   <span data-i18n="rateAnnot" style="margin-left:8px; color:#888; font-size:12px; white-space:normal"></span>
 </div>
 
-<div class="row" style="margin-bottom:0">
+<div class="row">
   <span class="lbl" data-i18n="lblSSS" style="color:purple">SSS</span>
   <input type="range" id="sss-sl" min="1" max="1000" step="1" value="20">
   <input type="text" class="num-input" id="sss-num" value="20">
   <span id="sss-annot" style="margin-left:8px; color:#888; font-size:12px; white-space:normal"></span>
 </div>
+
+<div class="row" style="margin-bottom:0">
+  <span class="lbl" data-i18n="lblRSS" style="color:brown">RSS</span>
+  <input type="range" id="rss-sl" min="0.01" max="100" step="0.01" value="2">
+  <input type="text" class="num-input" id="rss-num" value="2">
+  <span style="margin-left:4px; color:#555; white-space:nowrap">%</span>
+  <span id="rss-annot" style="margin-left:8px; color:#888; font-size:12px; white-space:normal"></span>
+</div>
 </div>
 
 <div style="border:1px solid #d0d0d0; border-radius:5px; padding:2px 0; margin-bottom:3px;">
+<div class="grp-title" data-i18n="grpRounds">Rounds</div>
 <div class="row" style="height:auto; margin-bottom:2px;">
   <span class="lbl"></span>
   <span data-i18n="roundDef" style="color:#888; font-size:12px; white-space:normal"></span>
@@ -374,6 +393,17 @@ h1 {
 
 <canvas id="prob-chart" width="940" height="430"></canvas>
 
+<div class="bottom">
+  <div class="log-row">
+    <span data-i18n="logScaleXLbl">Log x-axis</span>
+    <div class="btn-group" id="prob-log-btns">
+      <button data-val="on" class="active" data-i18n="logOn">On</button>
+      <button data-val="off" data-i18n="logOff">Off</button>
+      <button data-val="auto" data-i18n="logAuto">Auto</button>
+    </div>
+  </div>
+</div>
+
 <div id="prob-stats"></div>
 
 </div><!-- /page-prob -->
@@ -395,6 +425,7 @@ const TRADING_DAYS = {
 const C = {
   safe:'steelblue', risky:'darkorange', kelly:'seagreen',
   flat:'black', win:'#2ca02c', loss:'#d62728', start:'#999', growth:'#bbb', sss:'purple',
+  rss:'brown',
 };
 
 // ── i18n ─────────────────────────────────────────────────────────────────────
@@ -407,12 +438,15 @@ const I18N = {
     subtitleLink: "Kelly Criterion",
     subtitlePost: ")",
     subtitleHref: "https://en.wikipedia.org/wiki/Kelly_criterion",
+    grpScenario: "Scenario",
+    grpStrategies: "Strategies",
+    grpRounds: "Rounds",
     edgeComment: "How much better are your chances vs. true random? My best guess: 51.5% ~= stock market (you know it tends to go up). 56% = top informed trader. 80% if you are Barron Frump and trade in oil.",
     lblChance: "Chance",
     lblB: "Reward",
     bAnnot: "Payout factor if you win, relative to bet (b)",
     rerollBtn: "Roll again",
-    rerollAnnot: "Required if you change chance or reward. Generates a new random coinflip series (if you don't like your destiny).",
+    rerollAnnot: "Required if you change chance. Generates a new random coinflip series (if you don't like your destiny).",
     lblKellyFormula: "Kelly formula",
     lblCapital: "Start capital",
     lblWipeout: "Wipeout at $",
@@ -426,10 +460,13 @@ const I18N = {
     rateAnnot: "(bonds~=4%; stock market~=10%; 10x in 10y = 26%)",
     lblSSS: "SSS (Spontaneous Sergio Strategy)",
     sssAnnot: pct => `bet ${pct.toFixed(2)}% of start capital after each win; double on every loss`,
+    lblRSS: "RSS (Revised Sergio Strategy)",
+    rssAnnot: pct => `bet ${pct.toFixed(2)}% of current bankroll after each win; double on every loss`,
     roundDef: "One Round is one coin flip; simulates one trade, or one day in the market",
-    lblRounds: "Rounds",
+    lblRounds: "Rounds = days",
     roundsAnnot: "Cursor-Right advances",
     logScaleLbl: "Log scale",
+    logScaleXLbl: "Log x-axis",
     logOn: "On",
     logOff: "Off",
     logAuto: "Auto",
@@ -464,7 +501,7 @@ const I18N = {
     probRunning: "running…",
     probStratNames: {
       f1: "Safe (half Kelly)", kelly: "Kelly", f2: "Risky",
-      flat: "Fixed bet", sss: "SSS",
+      flat: "Fixed bet", sss: "SSS", rss: "RSS",
     },
     rerunBtn: "Run again",
     outBankrupt: "bankrupt",
@@ -487,12 +524,15 @@ const I18N = {
     subtitleLink: "Kelly-Kriterium",
     subtitlePost: ")",
     subtitleHref: "https://de.wikipedia.org/wiki/Kelly-Kriterium",
+    grpScenario: "Szenario",
+    grpStrategies: "Strategien",
+    grpRounds: "Runden",
     edgeComment: "Wie viel besser stehen deine Chancen im Vergleich zu echtem Zufall? Meine beste Schätzung: 51,5% ~= Aktienmarkt (du weißt, dass er tendenziell steigt). 56% = bestinformierter Trader. 80%, wenn du Barron Frump bist und mit Öl handelst.",
     lblChance: "Chance",
     lblB: "Gewinn",
     bAnnot: "Auszahlungsfaktor bei Gewinn, relativ zum Einsatz (b)",
     rerollBtn: "Neu würfeln",
-    rerollAnnot: "Nötig, wenn du Chance oder Gewinn änderst. Erzeugt eine neue zufällige Münzwurf-Serie (falls dir dein Schicksal nicht gefällt).",
+    rerollAnnot: "Nötig, wenn du Chance änderst. Erzeugt eine neue zufällige Münzwurf-Serie (falls dir dein Schicksal nicht gefällt).",
     lblKellyFormula: "Kelly-Formel",
     lblCapital: "Startkapital",
     lblWipeout: "Pleite bei $",
@@ -506,10 +546,13 @@ const I18N = {
     rateAnnot: "(Anleihen~=4%; Aktienmarkt~=10%; 10x in 10 Jahren = 26%)",
     lblSSS: "SSS (Spontaneous Sergio Strategy)",
     sssAnnot: pct => `setze ${pct.toFixed(2)}% des Startkapitals nach jedem Gewinn ein; verdopple bei jedem Verlust`,
+    lblRSS: "RSS (Revidierte Sergio-Strategie)",
+    rssAnnot: pct => `setze ${pct.toFixed(2)}% des aktuellen Kapitals nach jedem Gewinn ein; verdopple bei jedem Verlust`,
     roundDef: "Eine Runde ist ein Münzwurf; simuliert einen Trade oder einen Tag am Markt",
-    lblRounds: "Runden",
+    lblRounds: "Runden = Tage",
     roundsAnnot: "Pfeiltaste rechts erhöht",
     logScaleLbl: "Log-Skala",
+    logScaleXLbl: "Log-X-Achse",
     logOn: "An",
     logOff: "Aus",
     logAuto: "Auto",
@@ -544,7 +587,7 @@ const I18N = {
     probRunning: "läuft…",
     probStratNames: {
       f1: "Sicher (halber Kelly)", kelly: "Kelly", f2: "Riskant",
-      flat: "Fixer Einsatz", sss: "SSS",
+      flat: "Fixer Einsatz", sss: "SSS", rss: "RSS",
     },
     rerunBtn: "Nochmal spielen",
     outBankrupt: "pleite",
@@ -622,6 +665,25 @@ function simulateSSS(wins, b, baseBet, start) {
     if (wins[i]) {
       br[i+1] = br[i] + b * actualBet;
       bet = baseBet;
+    } else {
+      br[i+1] = br[i] - actualBet;
+      bet = actualBet * 2;
+    }
+  }
+  return br;
+}
+
+// RSS: like Kelly it stakes a fraction of the *current* bankroll, but like SSS it
+// doubles the stake after every loss and only resets to that fraction after a win.
+function simulateRSS(wins, b, frac, start) {
+  const br = new Float64Array(wins.length + 1);
+  br[0] = start;
+  let bet = start * frac;
+  for (let i = 0; i < wins.length; i++) {
+    const actualBet = Math.min(bet, Math.max(br[i], 0));
+    if (wins[i]) {
+      br[i+1] = br[i] + b * actualBet;
+      bet = br[i+1] * frac;
     } else {
       br[i+1] = br[i] - actualBet;
       bet = actualBet * 2;
@@ -757,6 +819,7 @@ const getF2    = () => parseFloat($('f2-sl').value) / 100;
 const getBet   = () => parseFloat($('bet-sl').value);
 const getRate  = () => parseFloat($('rate-sl').value);
 const getSSS   = () => parseFloat($('sss-sl').value);
+const getRSS   = () => parseFloat($('rss-sl').value) / 100;
 let roundsValue = 1;
 const getN     = () => roundsValue;
 // Authoritative start capital: the log slider only has step=0.001 resolution, so
@@ -805,6 +868,8 @@ function draw() {
   const bet = getBet(), n = getN(), start = getStart();
   const sssBet = getSSS();
   $('sss-annot').textContent = t('sssAnnot')(sssBet / start * 100);
+  const rssFrac = getRSS();
+  $('rss-annot').textContent = t('rssAnnot')(rssFrac * 100);
   const showWO = getWO();
   const q = 1 - p;
   const fStar = b > 0 ? Math.max((b * p - q) / b, 0) : 0;
@@ -822,6 +887,7 @@ function draw() {
   const br2    = simulate(wins, b, f2, start);
   const brFlat = simulateFlat(wins, b, bet, start);
   const brSSS  = simulateSSS(wins, b, sssBet, start);
+  const brRSS  = simulateRSS(wins, b, rssFrac, start);
   const brK    = fStar > 0 ? simulate(wins, b, fStar, start) : null;
 
   const rate = getRate();
@@ -836,6 +902,7 @@ function draw() {
   const wo2    = showWO ? firstWipeout(br2, woThresh)    : null;
   const woFlat = showWO ? firstWipeout(brFlat, woThresh) : null;
   const woSSS  = showWO ? firstWipeout(brSSS, woThresh)  : null;
+  const woRSS  = showWO ? firstWipeout(brRSS, woThresh)  : null;
   const woK    = (showWO && brK) ? firstWipeout(brK, woThresh) : null;
 
   const br1p   = wo1    != null ? br1.slice(0, wo1 + 1)    : br1;
@@ -845,10 +912,12 @@ function draw() {
   const brFlatp = brFlat.slice(0, flatEnd + 1);
   const sssEnd = woSSS != null ? woSSS : n;
   const brSSSp = brSSS.slice(0, sssEnd + 1);
+  const rssEnd = woRSS != null ? woRSS : n;
+  const brRSSp = brRSS.slice(0, rssEnd + 1);
 
   // Y range (use only plotted, finite data — extreme compounding can overflow
   // a series to Infinity, which must never reach the scale/tick math below)
-  const visArrays = [br1p, br2p, brFlatp, brSSSp, brGrowth];
+  const visArrays = [br1p, br2p, brFlatp, brSSSp, brRSSp, brGrowth];
   if (brKp) visArrays.push(brKp);
   const all = visArrays.flatMap(a => Array.from(a)).filter(Number.isFinite);
   const posVals = all.filter(v => v > 0);
@@ -938,6 +1007,7 @@ function draw() {
   drawLine(br2p, C.risky, 2, false);
   drawLine(brFlatp, C.flat, 1.5, false);
   drawLine(brSSSp, C.sss, 1.5, false);
+  drawLine(brRSSp, C.rss, 1.5, false);
   if (brKp) drawLine(brKp, C.kelly, 1.5, true);
 
   // Win/loss strip — rects right above the x-axis
@@ -960,7 +1030,7 @@ function draw() {
   // ── wipeout markers on x-axis ──
   if (showWO) {
     const axY = mt + ph, s = 7;
-    const wos = [[wo1, C.safe], [wo2, C.risky], [woFlat, C.flat], [woSSS, C.sss]];
+    const wos = [[wo1, C.safe], [wo2, C.risky], [woFlat, C.flat], [woSSS, C.sss], [woRSS, C.rss]];
     if (brK) wos.push([woK, C.kelly]);
     ctx.lineWidth = 2.5;
     wos.forEach(([idx, color]) => {
@@ -1041,6 +1111,7 @@ function draw() {
     { color: C.risky, label: `${t('legendRisky')} ${f2.toFixed(2)}` },
     { color: C.flat,  label: `${t('legendFlat')} $${bet}/${t('roundAxis').toLowerCase()}` },
     { color: C.sss,   label: `SSS $${sssBet}` },
+    { color: C.rss,   label: `RSS ${(rssFrac * 100).toFixed(2)}%` },
     { color: C.growth, label: `${rate}${t('legendPerYear')}` },
   ];
   ctx.font = '11px system-ui, sans-serif';
@@ -1063,6 +1134,7 @@ function draw() {
     { y: br2p[br2p.length - 1],   color: C.risky, text: `${t('rightRisky')}: ${fmtVal(br2p[br2p.length - 1])}` },
     { y: brFlat[flatEnd],          color: C.flat,  text: `$${bet}: ${fmtVal(brFlat[flatEnd])}` },
     { y: brSSS[sssEnd],            color: C.sss,   text: `SSS: ${fmtSigned(brSSS[sssEnd])}` },
+    { y: brRSS[rssEnd],            color: C.rss,   text: `RSS: ${fmtSigned(brRSS[rssEnd])}` },
     ...(brKp ? [{ y: brKp[brKp.length - 1], color: C.kelly, text: `${t('rightKelly')}: ${fmtVal(brKp[brKp.length - 1])}` }] : []),
     { y: brGrowth[n], color: C.growth, text: `${rate}${t('rightPerYear')}: ${fmtVal(brGrowth[n])}` },
   ].filter(d => d.y >= 0.1);
@@ -1115,9 +1187,10 @@ function draw() {
 }
 
 // ── probability page ─────────────────────────────────────────────────────────
-const STRATS = ['f1', 'kelly', 'f2', 'flat', 'sss'];
-const STRAT_COLOR = { f1: C.safe, kelly: C.kelly, f2: C.risky, flat: C.flat, sss: C.sss };
+const STRATS = ['f1', 'kelly', 'f2', 'flat', 'sss', 'rss'];
+const STRAT_COLOR = { f1: C.safe, kelly: C.kelly, f2: C.risky, flat: C.flat, sss: C.sss, rss: C.rss };
 const selectedStrats = new Set(); // 0..all strategies, checkbox style
+let probLogMode = 'on'; // x-axis (outcome) scale: 'on' | 'off' | 'auto'
 let lastResult = null; // { series[{kind,outcomes}], runs, rounds, cfg, version }
 let setupVersion = 0;  // bumped on every Setup redraw, so stale results get dropped
 
@@ -1137,13 +1210,14 @@ function probCfg() {
     f2: getF2(),
     bet: getBet(),
     sssBase: getSSS(),
+    rssFrac: getRSS(),
   };
 }
 
 // One game: flip until the target is hit, the bankroll is wiped out, or rounds run out.
 function runOnce(kind, cfg) {
-  const { p, b, n, start, target, wo, f1, fStar, f2, bet, sssBase } = cfg;
-  let br = start, sssBet = sssBase;
+  const { p, b, n, start, target, wo, f1, fStar, f2, bet, sssBase, rssFrac } = cfg;
+  let br = start, sssBet = sssBase, rssBet = start * rssFrac;
   for (let i = 0; i < n; i++) {
     const win = Math.random() < p;
     if (kind === 'flat') {
@@ -1153,6 +1227,10 @@ function runOnce(kind, cfg) {
       const a = Math.min(sssBet, Math.max(br, 0));
       if (win) { br += b * a; sssBet = sssBase; }
       else     { br -= a;     sssBet = a * 2; }
+    } else if (kind === 'rss') {
+      const a = Math.min(rssBet, Math.max(br, 0));
+      if (win) { br += b * a; rssBet = br * rssFrac; }
+      else     { br -= a;     rssBet = a * 2; }
     } else {
       const f = kind === 'f1' ? f1 : kind === 'f2' ? f2 : fStar;
       br = win ? br * (1 + b * f) : br * (1 - f);
@@ -1213,6 +1291,15 @@ function drawProb() {
   const lo = Math.max(cfg.wo, cfg.start / 1000, 0.01);
   const hi = cfg.target;
   const logLo = Math.log10(lo), logHi = Math.log10(Math.max(hi, lo * 10));
+  // linear mode spans wipeout..target, the actual range a surviving run can end in
+  const linLo = Math.max(cfg.wo, 0), linHi = Math.max(hi, linLo + 1);
+  const useLog = probLogMode === 'on' ? true
+    : probLogMode === 'off' ? false
+    : hi >= cfg.start * 100;
+  // value → 0..1 across the binned (non-bankrupt, non-target) region
+  const pos = useLog
+    ? v => (Math.log10(Math.max(v, lo)) - logLo) / (logHi - logLo)
+    : v => (clamp(v, linLo, linHi) - linLo) / (linHi - linLo);
 
   const stats = series.map(({ kind, outcomes }) => {
     const bins = new Array(nbins).fill(0);
@@ -1222,8 +1309,7 @@ function drawProb() {
       if (o.outcome === 'bankrupt') { nBankrupt++; return; }
       if (o.outcome === 'target')   { nTarget++; targetRounds.push(o.rounds); return; }
       betweenVals.push(o.end);
-      const v = Math.max(o.end, lo);
-      const idx = clamp(Math.floor((Math.log10(v) - logLo) / (logHi - logLo) * nbins), 0, nbins - 1);
+      const idx = clamp(Math.floor(pos(o.end) * nbins), 0, nbins - 1);
       bins[idx]++;
     });
     const ends = outcomes.map(o => o.outcome === 'bankrupt' ? 0 : o.end);
@@ -1290,7 +1376,7 @@ function drawProb() {
   });
 
   // start-capital marker
-  const startSlot = 1 + (Math.log10(Math.max(cfg.start, lo)) - logLo) / (logHi - logLo) * nbins;
+  const startSlot = 1 + pos(cfg.start) * nbins;
   const sx = ml + gap + startSlot * slotW;
   if (sx > ml && sx < ml + pw) {
     ctx.strokeStyle = C.start;
@@ -1330,8 +1416,11 @@ function drawProb() {
   ctx.font = '11px system-ui, sans-serif';
   ctx.textAlign = 'center';
   ctx.fillStyle = '#444';
-  logTicks(Math.pow(10, logLo), Math.pow(10, logHi)).forEach(v => {
-    const slot = 1 + (Math.log10(v) - logLo) / (logHi - logLo) * nbins;
+  const xTickVals = useLog
+    ? logTicks(Math.pow(10, logLo), Math.pow(10, logHi))
+    : linearTicks(linLo, linHi, 8);
+  xTickVals.forEach(v => {
+    const slot = 1 + pos(v) * nbins;
     const cx = ml + gap + slot * slotW;
     if (cx < ml + slotW || cx > ml + pw - slotW) return;
     ctx.beginPath(); ctx.strokeStyle = '#aaa';
@@ -1342,6 +1431,13 @@ function drawProb() {
   ctx.fillStyle = '#666';
   ctx.font = '12px system-ui, sans-serif';
   ctx.fillText(t('axisOutcome'), ml + pw / 2, H - 6);
+
+  if (useLog) {
+    ctx.fillStyle = '#2a5fd0';
+    ctx.font = 'bold 12px system-ui, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('log', ml + pw, mt + ph + 16);
+  }
 
   ctx.save();
   ctx.translate(13, mt + ph / 2);
@@ -1373,13 +1469,17 @@ function drawProb() {
   // ── stats ──
   const pct = x => (x / runs * 100).toFixed(1) + '%';
   const rounds2 = m => Number.isFinite(m) ? Math.round(m).toLocaleString(t('locale')) : t('statNever');
-  // outcome: absolute, as a share of start capital, and annualized (252 rounds = 1y)
+  // outcome: absolute, total return vs start capital, and the same annualized
+  // (252 rounds = 1y). Both percentages are gains, not shares of capital:
+  // ending at 2.36× the start reads +136%, never 236%.
   const fmtPct = x => Math.abs(x) >= 10 ? x.toFixed(0) : x.toFixed(1);
+  const sign = x => (x > 0 ? '+' : '') + fmtPct(x);
   const outcome = v => {
     const rel = v / cfg.start;
     const years = Math.max(rounds, 1) / 252;
+    const total = (rel - 1) * 100;
     const yearly = rel > 0 ? (Math.pow(rel, 1 / years) - 1) * 100 : -100;
-    return `$${fmtSigned(v)} (${fmtPct(rel * 100)}% | ${fmtPct(yearly)}${t('legendPerYear')})`;
+    return `$${fmtSigned(v)} (${sign(total)}% | ${sign(yearly)}${t('legendPerYear')})`;
   };
 
   const head = ['', t('statTarget'), t('statBankrupt'), t('statBetween'), t('statAvg'), t('statMedian'), t('statMedianRoundsToTarget')];
@@ -1661,6 +1761,13 @@ function init() {
     const v = clamp(evalExpr($('sss-num').value) || 1, 1, maxBet);
     $('sss-sl').value = v; $('sss-num').value = v; draw();
   });
+  $('rss-sl').addEventListener('input', () => {
+    $('rss-num').value = $('rss-sl').value; draw();
+  });
+  $('rss-num').addEventListener('change', () => {
+    const v = clamp(evalExpr($('rss-num').value) || 0.01, 0.01, 100);
+    $('rss-sl').value = v; $('rss-num').value = v; draw();
+  });
 
   $('log-btns').querySelectorAll('button').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -1668,6 +1775,14 @@ function init() {
       $('log-btns').querySelectorAll('button').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       draw();
+    });
+  });
+  $('prob-log-btns').querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      probLogMode = btn.dataset.val;
+      $('prob-log-btns').querySelectorAll('button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      drawProb(); // re-bins the stored outcomes; no re-run needed
     });
   });
   $('wipeout-chk').addEventListener('change', draw);

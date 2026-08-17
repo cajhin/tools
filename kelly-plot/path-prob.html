@@ -1,0 +1,1601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Path Probabilities (Scenario Analysis)</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 13px;
+  padding: 16px 20px;
+  background: #fff;
+  color: #222;
+  display: flex;
+  justify-content: center;
+}
+.container {
+  width: 940px;
+  flex-shrink: 0;
+}
+
+/* ── header ── */
+h1 {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #222;
+  text-align: center;
+}
+.subtitle {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 14px;
+  text-align: center;
+}
+.subtitle a { color: #4a90d9; }
+.topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+.topbar a { color: #4a90d9; font-size: 12px; text-decoration: none; }
+.topbar a:hover { text-decoration: underline; }
+
+/* ── control rows ── */
+.row {
+  display: flex;
+  align-items: center;
+  min-height: 30px;
+  margin-bottom: 3px;
+}
+.lbl {
+  width: 148px;
+  text-align: right;
+  padding-right: 10px;
+  flex-shrink: 0;
+  color: #333;
+}
+.lbl.grey { color: #888; font-size: 12px; }
+.annot { margin-left: 8px; color: #888; font-size: 12px; }
+.txt-input {
+  width: 200px;
+  padding: 2px 5px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  font-size: 13px;
+}
+select {
+  padding: 3px 5px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  font-size: 13px;
+  background: #fff;
+  color: #222;
+  cursor: pointer;
+}
+h2.fold { cursor: pointer; user-select: none; }
+h2.fold:hover { color: #4a90d9; }
+.chev { display: inline-block; width: 12px; color: #888; font-size: 11px; }
+.fold-note { font-weight: 400; color: #888; font-size: 12px; margin-left: 6px; }
+#sc-tbl select { min-width: 128px; }
+#pf-tbl tr.cash td { border-top: 1px solid #ddd; padding-top: 4px; color: #222; font-weight: 600; }
+#pf-tbl tr.cash td.neg { color: #c0392b; }
+#pf-tbl td.wsum { color: #888; font-size: 12px; }
+#sc-tbl th { white-space: nowrap; }
+h2 {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 16px 0 6px;
+  color: #222;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 4px;
+}
+
+/* ── buttons ── */
+.btn-group { display: flex; gap: 3px; flex-wrap: wrap; }
+.btn-group button {
+  padding: 4px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  border: 1px solid #bbb;
+  border-radius: 3px;
+  background: #f5f5f5;
+  color: #333;
+  transition: background 0.1s;
+}
+.btn-group button:hover { background: #e0e0e0; }
+.btn-group button.active {
+  background: #4a90d9;
+  color: #fff;
+  border-color: #4a90d9;
+}
+.btn-group button.move {
+  width: 24px;
+  padding: 4px 0;
+  color: #666;
+  margin-left: 2px;
+}
+.btn-group button.move:disabled { color: #ccc; background: #fafafa; cursor: default; }
+.btn-group button.move:disabled:hover { background: #fafafa; }
+.btn-group button.bench {
+  border-color: #999;
+  box-shadow: inset 0 -3px 0 #999;
+}
+.add-btn {
+  padding: 3px 10px;
+  background: #4a90d9;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  white-space: nowrap;
+}
+.add-btn:hover { background: #357abd; }
+.add-btn.ghost {
+  background: #fff;
+  color: #4a90d9;
+  border: 1px solid #4a90d9;
+  margin-left: 6px;
+}
+.add-btn.ghost:hover { background: #eaf2fb; }
+.add-btn.ghost.warn { color: #a33; border-color: #c9a2a2; }
+.add-btn.ghost.warn:hover { background: #f7ecec; }
+body.dragging { outline: 3px dashed #4a90d9; outline-offset: -6px; }
+#io-note.ok { color: #2c7a2c; }
+#io-note.err { color: #c0392b; }
+.mini-btn {
+  width: 22px;
+  height: 22px;
+  line-height: 1;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  background: #f5f5f5;
+  color: #a33;
+  cursor: pointer;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.mini-btn:hover { background: #f3dede; }
+.mini-btn:disabled { color: #ccc; cursor: default; background: #fafafa; }
+#del-stock { margin-left: 8px; }
+
+/* ── scenario table ── */
+table.sc { border-collapse: collapse; margin-bottom: 6px; }
+table.sc th {
+  color: #888;
+  font-weight: 500;
+  font-size: 12px;
+  text-align: left;
+  padding: 0 8px 3px 0;
+}
+table.sc td { padding: 1px 8px 1px 0; vertical-align: middle; }
+table.sc input[type=text] {
+  width: 150px;
+  padding: 2px 5px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  font-size: 13px;
+}
+table.sc input[type=number] {
+  width: 78px;
+  padding: 2px 5px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  font-size: 13px;
+  text-align: right;
+}
+table.sc input[type=range] { width: 200px; cursor: pointer; accent-color: #4a90d9; }
+.swatch { display: inline-block; width: 11px; height: 11px; border-radius: 2px; }
+.sum-note { font-size: 12px; color: #888; margin-left: 10px; }
+.sum-note.warn { color: #c0700f; }
+
+/* ── canvas ── */
+.canvas-wrap { overflow-x: auto; max-width: 100%; }
+canvas {
+  display: block;
+  margin-top: 8px;
+  border: 1px solid #ddd;
+  border-radius: 2px;
+}
+
+/* ── stats ── */
+.stats { margin-top: 10px; color: #444; font-size: 12px; line-height: 1.6; }
+.stats b { color: #222; }
+.stats table { border-collapse: collapse; margin-top: 4px; }
+.stats th, .stats td {
+  padding: 2px 14px 2px 0;
+  text-align: right;
+  white-space: nowrap;
+}
+.stats th { color: #888; font-weight: 500; }
+.stats th:first-child, .stats td:first-child { text-align: left; }
+.stats tr.tot td { border-top: 1px solid #ddd; color: #222; font-weight: 600; }
+.hidden { display: none; }
+.bottom {
+  display: flex;
+  gap: 24px;
+  margin-top: 7px;
+  align-items: center;
+}
+.bottom label { display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<div class="topbar">
+  <a href="kelly.html" id="back-link">← Kelly simulator</a>
+  <div class="btn-group" id="lang-btns">
+    <button data-val="en" class="active">EN</button>
+    <button data-val="de">DE</button>
+  </div>
+</div>
+
+<h1 data-i18n="title">Path Probabilities (Scenario Analysis)</h1>
+<div class="subtitle" id="subtitle"></div>
+
+<!-- ── stocks ── -->
+<h2 data-i18n="secStocks">Stocks</h2>
+<div class="row">
+  <div class="lbl" data-i18n="lblSaved">Saved</div>
+  <input type="text" id="save-label" class="txt-input" style="width:150px" maxlength="60">
+  <button class="add-btn ghost" id="save-file" data-i18n="saveFile">Save file</button>
+  <button class="add-btn ghost" id="load-file" data-i18n="loadFile">Load file</button>
+  <button class="add-btn ghost warn" id="reset-btn" data-i18n="resetBtn">Reset</button>
+  <input type="file" id="file-input" accept=".json,application/json" class="hidden">
+</div>
+<div class="row" id="io-row">
+  <div class="lbl"></div>
+  <span class="annot" id="io-note" data-i18n="ioAnnot">everything is kept in this browser — export a .json to keep it safe or move it to another machine (or drop a .json anywhere on this page to load it)</span>
+</div>
+<div class="row">
+  <div class="lbl" data-i18n="lblStock">Stock</div>
+  <div class="btn-group" id="stock-btns"></div>
+  <span style="width:8px"></span>
+  <button class="add-btn" id="add-stock" data-i18n="addStock">+ Stock</button>
+</div>
+<div class="row">
+  <div class="lbl" data-i18n="lblTicker">Ticker</div>
+  <input type="text" class="txt-input" id="ticker">
+  <button class="mini-btn" id="del-stock" title="remove stock">×</button>
+  <span class="annot" data-i18n="tickerAnnot">label only — nothing is fetched, all inputs are your own estimates</span>
+</div>
+<table class="sc" id="stock-tbl"></table>
+<div style="padding-left:148px">
+  <span class="sum-note" id="stock-sum"></span>
+</div>
+
+<!-- ── portfolio ── -->
+<h2 class="fold" id="pf-head"><span class="chev" id="pf-chev">▾</span> <span data-i18n="secPortfolio">Portfolio</span>
+  <span class="fold-note" id="pf-note"></span></h2>
+<div id="pf-body">
+  <div class="row">
+    <div class="lbl"></div>
+    <span class="annot" data-i18n="pfAnnot">share of the portfolio held in each stock — the rest is cash</span>
+  </div>
+  <table class="sc" id="pf-tbl"></table>
+</div>
+
+<!-- ── scenarios ── -->
+<h2 class="fold" id="sc-head"><span class="chev" id="sc-chev">▸</span> <span data-i18n="secScenarios">Scenario</span>
+  <span class="fold-note" id="sc-count"></span></h2>
+<div id="sc-body" class="hidden">
+  <div class="row">
+    <div class="lbl"></div>
+    <span class="annot" data-i18n="scAnnot">a named situation — pick the path each stock takes if it happens</span>
+  </div>
+  <table class="sc" id="sc-tbl"></table>
+  <div style="padding-left:148px">
+    <button class="add-btn" id="add-scenario" data-i18n="addScenario">+ Scenario</button>
+  </div>
+</div>
+
+<!-- ── view ── -->
+<h2 data-i18n="secView">View</h2>
+<div class="row">
+  <div class="lbl" data-i18n="lblBench">Benchmark</div>
+  <select id="bench-sel"></select>
+  <span class="annot" data-i18n="benchAnnot">another defined stock, used as the reference distribution</span>
+</div>
+<div class="row">
+  <div class="lbl" data-i18n="lblMode">Mode</div>
+  <div class="btn-group" id="mode-btns">
+    <button data-val="abs" class="active" data-i18n="modeAbs">Absolute</button>
+    <button data-val="rel" data-i18n="modeRel">vs Benchmark</button>
+  </div>
+  <span class="annot" id="mode-annot"></span>
+</div>
+
+<div class="canvas-wrap"><canvas id="bar-chart" width="940" height="380"></canvas></div>
+<div class="bottom">
+  <label><input type="checkbox" id="show-bench" checked> <span data-i18n="showBenchLbl">Overlay benchmark</span></label>
+  <label><input type="checkbox" id="show-ev" checked> <span data-i18n="showEvLbl">Show expected value</span></label>
+  <label><input type="checkbox" id="show-curve" checked> <span data-i18n="showCurveLbl">Smooth curve</span></label>
+</div>
+
+<canvas id="pie-chart" width="940" height="330"></canvas>
+
+<div class="stats" id="stats"></div>
+
+</div><!-- /container -->
+
+<script>
+// ── constants ────────────────────────────────────────────────────────────────
+// scenario color runs pure red (-100%) → yellow (~0%) → pure green (+10000%).
+// The stops stretch the gradient over the everyday -30%…+100% band; the far tail
+// beyond +100% only has the last 15% of it left to travel.
+const COLOR_RET_STOPS = [-100, -30, 0, 100, 1000, 10000];
+const COLOR_T_STOPS   = [0, 0.15, 0.42, 0.85, 0.95, 1];
+const C = { bench:'#999', benchFill:'#e6e6e6', zero:'#bbb', ev:'#4a90d9', axis:'#888' };
+const STORE_KEY = 'pathProbState.v2';
+const RET_MIN = -100, RET_MAX = 10000;   // gain / loss bounds in %
+const LINTHRESH = 10;                    // symlog: linear below ±10%, log beyond
+const LIN_LO = -100, LIN_HI = 200;       // chart x-axis: fixed linear band, with the
+const CHART_W = 940;                     // right OUT_FRAC of the canvas always kept
+const OUT_FRAC = 0.25;                   // free for outliers, compressed to fit
+
+const $ = id => document.getElementById(id);
+const colorOf = r => colorForRet(r.ret);
+
+// ── i18n ─────────────────────────────────────────────────────────────────────
+let lang = localStorage.getItem('kellyLang') || 'en';
+
+const I18N = {
+  en: {
+    title: "Path Probabilities (Scenario Analysis)",
+    subtitlePre: "(one stock, several possible paths — each with a return and a probability. Companion to the ",
+    subtitleLink: "Kelly simulator",
+    subtitlePost: ")",
+    subtitleHref: "kelly.html",
+    backLink: "← Kelly simulator",
+    secStocks: "Stocks",
+    secView: "View",
+    lblStock: "Stock",
+    lblSaved: "Saved",
+    addStock: "+ Stock",
+    moveTitle: "move this stock left / right",
+    resetBtn: "Reset",
+    saveFile: "Save file",
+    saveLabelPh: "label (optional)",
+    loadFile: "Load file",
+    ioAnnot: "everything is kept in this browser — export a .json to keep it safe or move it to another machine (or drop a .json anywhere on this page to load it)",
+    ioSaved: name => `saved ${name}`,
+    ioLoaded: (n, name) => `loaded ${n} stock(s) from ${name}`,
+    ioBadFile: "not a path-prob file — expected JSON with a \"stocks\" list",
+    resetConfirm: "Discard all stocks and scenarios and load the defaults?",
+    delStockTitle: "remove this stock",
+    lblTicker: "Ticker",
+    tickerAnnot: "label only — nothing is fetched, all inputs are your own estimates",
+    lblBench: "Benchmark",
+    benchAnnot: "another defined stock, used as the reference distribution",
+    benchNone: "— none —",
+    addScenario: "+ Scenario",
+    secPortfolio: "Portfolio",
+    pfAnnot: "share of the portfolio held in each stock — the rest is cash",
+    colWeight: "% of portfolio",
+    lblCash: "Cash",
+    pfNote: (inv, cash) => `${inv.toFixed(1)}% invested · ${cash.toFixed(1)}% cash`,
+    pfNoteLev: lev => `leveraged: ${lev.toFixed(1)}% borrowed`,
+    secScenarios: "Scenario",
+    scAnnot: "a named situation — pick the path each stock takes if it happens",
+    scCount: n => n === 1 ? "1 defined" : `${n} defined`,
+    colScenario: "Scenario",
+    colPath: "Path",
+    colReturn: "Gain / loss",
+    colProb: "Probability",
+    sumOk: p => `Σ p = ${p.toFixed(3)} ✓`,
+    sumWarn: p => `Σ p = ${p.toFixed(3)} — normalized to 1 for the charts`,
+    lblMode: "Mode",
+    modeAbs: "Absolute",
+    modeRel: "vs Benchmark",
+    modeAnnotAbs: "probability of each path of the selected stock, as entered",
+    modeAnnotRel: name => `paths re-plotted as excess return over ${name}'s expected return (the table still shows the quantile-matched benchmark path and P(beat) from the interpolated benchmark distribution)`,
+    modeAnnotNoBench: "pick a benchmark stock above",
+    showBenchLbl: "Overlay benchmark",
+    showEvLbl: "Show expected value",
+    showCurveLbl: "Smooth curve",
+    axisProb: "Probability",
+    axisReturn: "Gain / loss (%)",
+    axisExcess: "Excess return vs benchmark (%-points)",
+    pieTitleAbs: name => `${name} — probability mass per path`,
+    pieTitleRel: (name, bench) => `${name} — probability mass per path (excess vs ${bench})`,
+    noData: "add at least one scenario with a probability > 0",
+    stExp: "Expected return",
+    stSd: "Std. deviation",
+    stLoss: "P(loss)",
+    stGain: "P(gain)",
+    stExcess: "Expected excess return",
+    stBeat: "P(beat benchmark)",
+    stBenchExp: "Benchmark expected return",
+    thScenario: "Scenario",
+    thRet: "Return",
+    thProb: "p",
+    thBenchQ: "Bench @ same quantile",
+    thExcess: "Excess vs E[bench]",
+    thBenchP: "Bench p interp. at return",
+    thBeat: "P(bench below)",
+    total: "Total",
+    vsBench: "vs bench",
+    // per-path [return, probability] for every new stock — market-like values,
+    // taken from MSCI World. Index-aligned with pathNames above.
+    defTemplate: [[-95, 0.01], [-30, 0.09], [-10, 0.20], [9, 0.49],
+                  [25, 0.15], [100, 0.05], [400, 0.01]],
+    defStocks: [
+      ['MSCI World', null],   // null = the template above
+      ['AAPL', [[-95, 0.01], [-40, 0.09], [-15, 0.20], [12, 0.44],
+                [40, 0.20], [100, 0.05], [400, 0.01]]],
+    ],
+    newScenario: "Scenario",
+    pathNames: ['Wipeout', 'Crash', 'Bear', 'Base', 'Bull', 'Moon', 'Stars'],
+    newStock: "Stock",
+  },
+  de: {
+    title: "Pfad-Wahrscheinlichkeiten (Szenario-Analyse)",
+    subtitlePre: "(eine Aktie, mehrere mögliche Pfade — jeder mit Rendite und Wahrscheinlichkeit. Ergänzung zum ",
+    subtitleLink: "Kelly-Simulator",
+    subtitlePost: ")",
+    subtitleHref: "kelly.html",
+    backLink: "← Kelly-Simulator",
+    secStocks: "Aktien",
+    secView: "Ansicht",
+    lblStock: "Aktie",
+    lblSaved: "Gespeichert",
+    addStock: "+ Aktie",
+    moveTitle: "diese Aktie nach links / rechts verschieben",
+    resetBtn: "Zurücksetzen",
+    saveFile: "Datei speichern",
+    saveLabelPh: "Label (optional)",
+    loadFile: "Datei laden",
+    ioAnnot: "alles liegt nur in diesem Browser — als .json exportieren, um es zu sichern oder auf einen anderen Rechner zu bringen (oder eine .json irgendwo auf diese Seite ziehen)",
+    ioSaved: name => `${name} gespeichert`,
+    ioLoaded: (n, name) => `${n} Aktie(n) aus ${name} geladen`,
+    ioBadFile: "keine path-prob-Datei — erwartet wird JSON mit einer \"stocks\"-Liste",
+    resetConfirm: "Alle Aktien und Szenarien verwerfen und die Vorgaben laden?",
+    delStockTitle: "diese Aktie entfernen",
+    lblTicker: "Ticker",
+    tickerAnnot: "nur ein Label — es werden keine Kurse geladen, alle Eingaben sind eigene Schätzungen",
+    lblBench: "Benchmark",
+    benchAnnot: "eine andere definierte Aktie, dient als Referenzverteilung",
+    benchNone: "— keine —",
+    addScenario: "+ Szenario",
+    secPortfolio: "Portfolio",
+    pfAnnot: "Anteil des Portfolios je Aktie — der Rest ist Cash",
+    colWeight: "% vom Portfolio",
+    lblCash: "Cash",
+    pfNote: (inv, cash) => `${inv.toFixed(1)}% investiert · ${cash.toFixed(1)}% Cash`,
+    pfNoteLev: lev => `gehebelt: ${lev.toFixed(1)}% geliehen`,
+    secScenarios: "Szenario",
+    scAnnot: "eine benannte Situation — wähle den Pfad, den jede Aktie dann nimmt",
+    scCount: n => n === 1 ? "1 definiert" : `${n} definiert`,
+    colScenario: "Szenario",
+    colPath: "Pfad",
+    colReturn: "Gewinn / Verlust",
+    colProb: "Wahrscheinlichkeit",
+    sumOk: p => `Σ p = ${p.toFixed(3)} ✓`,
+    sumWarn: p => `Σ p = ${p.toFixed(3)} — für die Charts auf 1 normiert`,
+    lblMode: "Modus",
+    modeAbs: "Absolut",
+    modeRel: "vs Benchmark",
+    modeAnnotAbs: "Wahrscheinlichkeit jedes Pfads der gewählten Aktie, wie eingegeben",
+    modeAnnotRel: name => `Pfade als Überrendite gegenüber der erwarteten Rendite von ${name} (die Tabelle zeigt weiter den quantil-gleichen Benchmark-Pfad und P(schlägt) aus der interpolierten Benchmark-Verteilung)`,
+    modeAnnotNoBench: "oben eine Benchmark-Aktie wählen",
+    showBenchLbl: "Benchmark einblenden",
+    showEvLbl: "Erwartungswert zeigen",
+    showCurveLbl: "Geglättete Kurve",
+    axisProb: "Wahrscheinlichkeit",
+    axisReturn: "Gewinn / Verlust (%)",
+    axisExcess: "Überrendite vs Benchmark (%-Punkte)",
+    pieTitleAbs: name => `${name} — Wahrscheinlichkeitsmasse je Pfad`,
+    pieTitleRel: (name, bench) => `${name} — Wahrscheinlichkeitsmasse je Pfad (Überrendite vs ${bench})`,
+    noData: "mindestens ein Szenario mit Wahrscheinlichkeit > 0 anlegen",
+    stExp: "Erwartete Rendite",
+    stSd: "Standardabweichung",
+    stLoss: "P(Verlust)",
+    stGain: "P(Gewinn)",
+    stExcess: "Erwartete Überrendite",
+    stBeat: "P(schlägt Benchmark)",
+    stBenchExp: "Erwartete Benchmark-Rendite",
+    thScenario: "Szenario",
+    thRet: "Rendite",
+    thProb: "p",
+    thBenchQ: "Bench @ gleichem Quantil",
+    thExcess: "Überrendite vs E[Bench]",
+    thBenchP: "Bench p interp. bei Rendite",
+    thBeat: "P(Bench darunter)",
+    total: "Summe",
+    vsBench: "vs Bench",
+    defTemplate: [[-95, 0.01], [-30, 0.09], [-10, 0.20], [9, 0.49],
+                  [25, 0.15], [100, 0.05], [400, 0.01]],
+    defStocks: [
+      ['MSCI World', null],
+      ['AAPL', [[-95, 0.01], [-40, 0.09], [-15, 0.20], [12, 0.44],
+                [40, 0.20], [100, 0.05], [400, 0.01]]],
+    ],
+    newScenario: "Szenario",
+    pathNames: ['Pleite', 'Crash', 'Bär', 'Basis', 'Bulle', 'Moon', 'Stars'],
+    newStock: "Aktie",
+  },
+};
+
+const t = key => I18N[lang][key];
+
+function applyI18n() {
+  document.documentElement.lang = lang;
+  document.title = t('title');
+  document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+  $('back-link').textContent = t('backLink');
+  $('del-stock').title = t('delStockTitle');
+  $('save-label').placeholder = t('saveLabelPh');
+  const sub = $('subtitle');
+  sub.textContent = '';
+  sub.append(
+    document.createTextNode(t('subtitlePre')),
+    Object.assign(document.createElement('a'), { href: t('subtitleHref'), textContent: t('subtitleLink') }),
+    document.createTextNode(t('subtitlePost')),
+  );
+  $('lang-btns').querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.val === lang));
+}
+
+// ── state ────────────────────────────────────────────────────────────────────
+// The path types are global and fixed (Wipeout … Stars): every stock carries one
+// entry per path, index-aligned with pathNames, and only the numbers differ.
+const PATH_COUNT = 7;
+const BASE_PATH = 3;                       // the "Base" path, default pick
+const pathName = i => I18N[lang].pathNames[i] || '?';
+const mk = (ret, prob) => ({ ret, prob });
+const templatePaths = () => I18N[lang].defTemplate.map(a => mk(...a));
+
+// scenario-facing list for a stock: labelled, so charts and stats stay unchanged
+const pathList = st => st ? st.paths.map((p, i) => ({ label: pathName(i), ret: p.ret, prob: p.prob })) : null;
+
+let uid = 1;
+const newId = () => uid++;
+
+function defaultState() {
+  const stocks = I18N[lang].defStocks.map(([ticker, ps]) =>
+    ({ id: newId(), ticker, paths: (ps || I18N[lang].defTemplate).map(a => mk(...a)) }));
+  // the benchmark sits first in the list; the stock under analysis is selected
+  return { stocks, activeId: stocks[stocks.length - 1].id, benchId: stocks[0].id,
+           mode: 'abs', label: '', scenarios: [], scOpen: false,
+           weights: {}, pfOpen: true };
+}
+
+let state = defaultState();
+
+function save() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) { /* ignore */ }
+}
+
+function load() {
+  let s;
+  try { s = JSON.parse(localStorage.getItem(STORE_KEY) || 'null'); } catch (e) { return; }
+  if (!s || !Array.isArray(s.stocks) || !s.stocks.length) return;
+  uid = Math.max(uid, ...s.stocks.map(x => (x.id | 0) + 1));
+  s.stocks = s.stocks.map(normalizeStock);
+  s.scenarios = sanitizeScenarios(s.scenarios, s.stocks);
+  s.weights = sanitizeWeights(s.weights, s.stocks);
+  s.scOpen = !!s.scOpen;
+  s.pfOpen = s.pfOpen !== false;
+  state = s;
+  if (!byId(state.activeId)) state.activeId = state.stocks[0].id;
+  if (!byId(state.benchId)) state.benchId = null;
+}
+
+// old shape: a free list of {label, ret, prob}. Match each entry to a fixed path
+// by its label (either language), fill the rest positionally, then from defaults.
+const ALL_PATH_NAMES = ['en', 'de'].map(l => I18N[l].pathNames);
+function pathsFromList(list) {
+  const paths = new Array(PATH_COUNT).fill(null);
+  const rest = [];
+  (Array.isArray(list) ? list : []).forEach(sc => {
+    const lbl = String(sc.label == null ? '' : sc.label).trim().toLowerCase();
+    const i = ALL_PATH_NAMES.reduce((acc, names) => acc >= 0 ? acc
+      : names.findIndex(n => n.toLowerCase() === lbl), -1);
+    if (i >= 0 && !paths[i]) paths[i] = mk(Number(sc.ret) || 0, Number(sc.prob) || 0);
+    else rest.push(sc);
+  });
+  const tmpl = templatePaths();
+  for (let i = 0; i < PATH_COUNT; i++) {
+    if (paths[i]) continue;
+    const take = rest.shift();
+    paths[i] = take ? mk(Number(take.ret) || 0, Number(take.prob) || 0) : tmpl[i];
+  }
+  return paths;
+}
+
+function normalizeStock(st) {
+  const paths = Array.isArray(st.paths) && st.paths.length
+    ? Array.from({ length: PATH_COUNT }, (_, i) => {
+        const p = st.paths[i] || {};
+        return mk(clamp(Number(p.ret) || 0, RET_MIN, RET_MAX), clamp(Number(p.prob) || 0, 0, 1));
+      })
+    : pathsFromList(st.scenarios);
+  return { id: st.id, ticker: String(st.ticker == null ? '?' : st.ticker), paths };
+}
+
+const byId = id => state.stocks.find(s => s.id === id) || null;
+// {label, picks:{stockId: pathIndex}} — a named situation and the path each stock takes
+function sanitizeScenarios(list, stocks) {
+  const ids = new Set(stocks.map(st => st.id));
+  return (Array.isArray(list) ? list : []).map(sc => {
+    const picks = {};
+    Object.entries(sc.picks || {}).forEach(([k, v]) => {
+      const id = Number(k);
+      if (ids.has(id) && v >= 0 && v < PATH_COUNT) picks[id] = Number(v);
+    });
+    return { label: String(sc.label == null ? '' : sc.label), picks };
+  });
+}
+
+// {stockId: percent of portfolio}; whatever is left over is cash
+function sanitizeWeights(w, stocks) {
+  const out = {};
+  stocks.forEach(st => {
+    const v = Number((w || {})[st.id]);
+    out[st.id] = isFinite(v) ? clamp(v, 0, 100) : 0;
+  });
+  return out;
+}
+
+const weightOf = id => Number(state.weights[id]) || 0;
+const invested = () => sum(state.stocks.map(st => weightOf(st.id)));
+
+const active = () => byId(state.activeId) || state.stocks[0];
+const benchStock = () => (state.benchId && state.benchId !== state.activeId) ? byId(state.benchId) : null;
+
+// ── math ─────────────────────────────────────────────────────────────────────
+const clamp = (x, lo, hi) => Math.min(hi, Math.max(lo, x));
+const sum = a => a.reduce((s, x) => s + x, 0);
+
+// symlog: linear within ±LINTHRESH, logarithmic outside, so -50…+100 keeps room
+// while +10000 still fits. Used for both the sliders and the chart x-axis.
+function retToPos(v) {
+  const a = Math.abs(v);
+  const p = a <= LINTHRESH ? a : LINTHRESH * (1 + Math.log(a / LINTHRESH));
+  return Math.sign(v) * p;
+}
+function posToRet(p) {
+  const a = Math.abs(p);
+  const v = a <= LINTHRESH ? a : LINTHRESH * Math.exp(a / LINTHRESH - 1);
+  return Math.sign(p) * v;
+}
+// sliders work in integer 1/100ths of a symlog unit, so min/max/step stay whole
+const POS_SCALE = 100;
+const POS_MIN = Math.round(retToPos(RET_MIN) * POS_SCALE);
+const POS_MAX = Math.round(retToPos(RET_MAX) * POS_SCALE);
+const retToSlider = v => Math.round(retToPos(v) * POS_SCALE);
+const sliderToRet = p => posToRet(p / POS_SCALE);
+
+// valid, normalized, sorted-by-return copy of a scenario list; equal returns merged
+function prepare(list) {
+  if (!list) return [];
+  const valid = list.filter(s => isFinite(s.ret) && isFinite(s.prob) && s.prob > 0);
+  const total = sum(valid.map(s => s.prob));
+  if (!total) return [];
+  const merged = [];
+  valid.slice().sort((a, b) => a.ret - b.ret).forEach(s => {
+    const last = merged[merged.length - 1];
+    if (last && last.ret === s.ret) { last.prob += s.prob / total; last.label += ' / ' + s.label; }
+    // i0 = row index in the input list, so chart colors match the table swatches
+    else merged.push({ label: s.label, ret: s.ret, prob: s.prob / total, i0: list.indexOf(s) });
+  });
+  return merged;
+}
+
+// mid-quantile of each scenario: P(below) + p/2
+function midQuantiles(sorted) {
+  let cum = 0;
+  return sorted.map(s => { const q = cum + s.prob / 2; cum += s.prob; return q; });
+}
+
+// piecewise-linear CDF through the mid-quantile points, extended to hit 0 and 1
+function buildCdf(sorted) {
+  if (!sorted.length) return null;
+  const q = midQuantiles(sorted);
+  const xs = sorted.map(s => s.ret);
+  const gapLo = xs.length > 1 ? xs[1] - xs[0] : 10;
+  const gapHi = xs.length > 1 ? xs[xs.length - 1] - xs[xs.length - 2] : 10;
+  return {
+    x: [xs[0] - gapLo / 2, ...xs, xs[xs.length - 1] + gapHi / 2],
+    q: [0, ...q, 1],
+    p: [0, ...sorted.map(s => s.prob), 0],   // for density interpolation
+  };
+}
+
+// clamped piecewise-linear interpolation of ys over strictly increasing xs
+function interp(xs, ys, x) {
+  const n = xs.length;
+  if (!n) return NaN;
+  if (x <= xs[0]) return ys[0];
+  if (x >= xs[n - 1]) return ys[n - 1];
+  let i = 1;
+  while (i < n - 1 && xs[i] < x) i++;
+  const span = xs[i] - xs[i - 1];
+  const f = span ? (x - xs[i - 1]) / span : 0;
+  return ys[i - 1] + f * (ys[i] - ys[i - 1]);
+}
+
+function stats(sorted) {
+  const mean = sum(sorted.map(s => s.prob * s.ret));
+  const varc = sum(sorted.map(s => s.prob * (s.ret - mean) ** 2));
+  return {
+    mean, sd: Math.sqrt(varc),
+    pLoss: sum(sorted.filter(s => s.ret < 0).map(s => s.prob)),
+    pGain: sum(sorted.filter(s => s.ret > 0).map(s => s.prob)),
+  };
+}
+
+// per-scenario comparison of the selected stock against the benchmark stock.
+// Excess is measured against the benchmark's *expected* return — one constant
+// shift — so a -95% wipeout stays a -95% wipeout instead of being cancelled out
+// by the benchmark's own tail at the same rarity.
+function compare(stock, bench) {
+  const cdf = buildCdf(bench);
+  const benchMean = bench.length ? stats(bench).mean : NaN;
+  const q = midQuantiles(stock);
+  return stock.map((s, i) => {
+    if (!cdf) return { ...s, q: q[i], benchRet: NaN, excess: NaN, benchP: NaN, beat: NaN };
+    const benchRet = interp(cdf.q, cdf.x, q[i]);               // bench return at same quantile
+    const beat     = clamp(interp(cdf.x, cdf.q, s.ret), 0, 1); // P(bench below this return)
+    const benchP   = Math.max(0, interp(cdf.x, cdf.p, s.ret)); // smoothed bench probability there
+    return { ...s, q: q[i], benchRet, excess: s.ret - benchMean, benchP, beat };
+  });
+}
+
+// what the charts and stats work on
+function view() {
+  const stock = prepare(pathList(active()));
+  const bs = benchStock();
+  const bench = prepare(pathList(bs));
+  const rel = state.mode === 'rel' && bench.length > 0;
+  return {
+    stock, bench, rel, bs,
+    rows: bench.length ? compare(stock, bench) : stock.map(s => ({ ...s })),
+  };
+}
+
+// ── smooth curve ─────────────────────────────────────────────────────────────
+// Monotone cubic (Fritsch–Carlson) interpolation *through* the scenario points,
+// not a kernel sum: a wide empty gap between two paths keeps the curve up between
+// them instead of pulling it down to zero, and it never overshoots the data.
+function fadeWidth(sorted) {
+  if (sorted.length < 2) return 10;
+  const gaps = [];
+  for (let i = 1; i < sorted.length; i++) gaps.push(sorted[i].ret - sorted[i - 1].ret);
+  gaps.sort((a, b) => a - b);
+  const mid = gaps.length % 2 ? gaps[(gaps.length - 1) / 2]
+                              : (gaps[gaps.length / 2 - 1] + gaps[gaps.length / 2]) / 2;
+  return clamp(0.5 * mid, 5, 20);
+}
+
+function buildCurve(pts) {
+  if (!pts.length) return null;
+  const byX = new Map();
+  pts.forEach(p => byX.set(p.ret, (byX.get(p.ret) || 0) + p.prob));
+  const inner = [...byX.entries()].sort((a, b) => a[0] - b[0]);
+  const fade = fadeWidth(inner.map(([ret]) => ({ ret })));
+  // pad with a zero on each side so the curve rises from and returns to the axis
+  const xs = [inner[0][0] - fade, ...inner.map(e => e[0]), inner[inner.length - 1][0] + fade];
+  const ys = [0, ...inner.map(e => e[1]), 0];
+  const n = xs.length;
+
+  const d = [], m = [];
+  for (let i = 0; i < n - 1; i++) d.push((ys[i + 1] - ys[i]) / (xs[i + 1] - xs[i]));
+  m.push(d[0]);
+  for (let i = 1; i < n - 1; i++) m.push((d[i - 1] + d[i]) / 2);
+  m.push(d[n - 2]);
+  for (let i = 0; i < n - 1; i++) {                 // Fritsch–Carlson monotonicity
+    if (d[i] === 0) { m[i] = 0; m[i + 1] = 0; continue; }
+    const a = m[i] / d[i], b = m[i + 1] / d[i];
+    const q = a * a + b * b;
+    if (q > 9) { const s2 = 3 / Math.sqrt(q); m[i] = s2 * a * d[i]; m[i + 1] = s2 * b * d[i]; }
+  }
+  return { xs, ys, m };
+}
+
+function curveAt(c, x) {
+  if (!c) return 0;
+  const { xs, ys, m } = c;
+  const n = xs.length;
+  if (x <= xs[0] || x >= xs[n - 1]) return 0;
+  let i = 0;
+  while (i < n - 2 && xs[i + 1] < x) i++;
+  const h = xs[i + 1] - xs[i], u = (x - xs[i]) / h, u2 = u * u, u3 = u2 * u;
+  return (2 * u3 - 3 * u2 + 1) * ys[i] + (u3 - 2 * u2 + u) * h * m[i]
+       + (-2 * u3 + 3 * u2) * ys[i + 1] + (u3 - u2) * h * m[i + 1];
+}
+
+// ── scenario colors ──────────────────────────────────────────────────────────
+function colorForRet(v) {
+  const f = interp(COLOR_RET_STOPS, COLOR_T_STOPS, clamp(v || 0, RET_MIN, RET_MAX));
+  return `hsl(${(120 * f).toFixed(1)}, 85%, 47%)`;
+}
+
+// readable label color on top of a scenario color (yellow needs dark text, red white)
+function textOnRet(v) {
+  const f = interp(COLOR_RET_STOPS, COLOR_T_STOPS, clamp(v || 0, RET_MIN, RET_MAX));
+  const h = 120 * f / 60, c = 0.85 * (1 - Math.abs(2 * 0.47 - 1)), x = c * (1 - Math.abs(h % 2 - 1));
+  const [r, g, b] = h < 1 ? [c, x, 0] : h < 2 ? [x, c, 0] : [0, c, x];
+  const m = 0.47 - c / 2;
+  const lin = u => (u <= 0.03928 ? u / 12.92 : ((u + 0.055) / 1.055) ** 2.4);
+  const L = 0.2126 * lin(r + m) + 0.7152 * lin(g + m) + 0.0722 * lin(b + m);
+  return L > 0.35 ? '#1a1a1a' : '#fff';
+}
+
+// ── formatting ───────────────────────────────────────────────────────────────
+const fmtPct = x => (x >= 0 ? '+' : '') + x.toFixed(1) + '%';
+const fmtP   = x => (x * 100).toFixed(1) + '%';
+const fmtPP  = x => (x >= 0 ? '+' : '') + x.toFixed(1);
+
+function niceStep(raw) {
+  const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+  const n = raw / mag;
+  return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * mag;
+}
+function linearTicks(lo, hi, count = 6) {
+  if (!(hi > lo)) return [lo];
+  const step = niceStep((hi - lo) / count);
+  const out = [];
+  for (let v = Math.ceil(lo / step) * step; v <= hi + step * 1e-9; v += step) out.push(v);
+  return out;
+}
+
+// ── stock selector ───────────────────────────────────────────────────────────
+function renderStockBtns() {
+  const box = $('stock-btns');
+  box.textContent = '';
+  state.stocks.forEach(st => {
+    const b = document.createElement('button');
+    b.textContent = st.ticker || '?';
+    b.classList.toggle('active', st.id === state.activeId);
+    b.classList.toggle('bench', st.id === state.benchId && st.id !== state.activeId);
+    b.onclick = () => { state.activeId = st.id; rebuild(); };
+    box.appendChild(b);
+  });
+
+  // reorder the selected stock within the group
+  const i = state.stocks.findIndex(st => st.id === state.activeId);
+  [['‹', -1, i > 0], ['›', 1, i < state.stocks.length - 1]].forEach(([txt, dir, on]) => {
+    const b = document.createElement('button');
+    b.textContent = txt;
+    b.className = 'move';
+    b.disabled = !on;
+    b.title = t('moveTitle');
+    b.onclick = () => moveStock(dir);
+    box.appendChild(b);
+  });
+  $('del-stock').disabled = state.stocks.length < 2;
+}
+
+function moveStock(dir) {
+  const i = state.stocks.findIndex(st => st.id === state.activeId);
+  const j = i + dir;
+  if (i < 0 || j < 0 || j >= state.stocks.length) return;
+  [state.stocks[i], state.stocks[j]] = [state.stocks[j], state.stocks[i]];
+  rebuild();
+}
+
+function renderBenchSel() {
+  const sel = $('bench-sel');
+  sel.textContent = '';
+  const none = new Option(t('benchNone'), '');
+  sel.appendChild(none);
+  state.stocks.filter(s => s.id !== state.activeId).forEach(s => {
+    sel.appendChild(new Option(s.ticker || '?', String(s.id)));
+  });
+  sel.value = benchStock() ? String(state.benchId) : '';
+}
+
+function addStock() {
+  const st = { id: newId(), ticker: `${t('newStock')} ${state.stocks.length + 1}`,
+               paths: templatePaths() };
+  state.stocks.push(st);
+  state.activeId = st.id;
+  state.scenarios.forEach(sc => { sc.picks[st.id] = BASE_PATH; });
+  state.weights[st.id] = 0;
+  rebuild();
+}
+
+function delStock() {
+  if (state.stocks.length < 2) return;
+  const i = state.stocks.findIndex(s => s.id === state.activeId);
+  const gone = state.stocks[i].id;
+  state.stocks.splice(i, 1);
+  state.scenarios.forEach(sc => { delete sc.picks[gone]; });
+  delete state.weights[gone];
+  if (!byId(state.benchId)) state.benchId = null;
+  state.activeId = state.stocks[Math.min(i, state.stocks.length - 1)].id;
+  rebuild();
+}
+
+// ── file export / import ─────────────────────────────────────────────────────
+const FILE_FORMAT = 'path-prob';
+
+function ioNote(msg, cls) {
+  const el = $('io-note');
+  el.textContent = msg;
+  el.className = 'annot ' + (cls || '');
+  clearTimeout(ioNote.timer);
+  ioNote.timer = setTimeout(() => {
+    el.textContent = t('ioAnnot');
+    el.className = 'annot';
+  }, 6000);
+}
+
+// free-text label → file-name suffix: spaces to dashes, drop anything awkward
+function slug(txt) {
+  return txt.trim().toLowerCase()
+    .replace(/[^a-z0-9._-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 40);
+}
+
+function exportFile() {
+  const label = $('save-label').value;
+  const doc = {
+    format: FILE_FORMAT, version: 2, saved: new Date().toISOString(), label,
+    activeId: state.activeId, benchId: state.benchId, mode: state.mode,
+    pathNames: I18N[lang].pathNames,   // for reference; paths are index-aligned
+    stocks: state.stocks.map(st => ({
+      id: st.id, ticker: st.ticker,
+      paths: st.paths.map(p => ({ ret: p.ret, prob: p.prob })),
+    })),
+    scenarios: state.scenarios.map(sc => ({ label: sc.label, picks: { ...sc.picks } })),
+    weights: { ...state.weights },
+  };
+  const tag = slug(label);
+  const name = `path-prob-${new Date().toISOString().slice(0, 10)}${tag ? '-' + tag : ''}.json`;
+  const url = URL.createObjectURL(new Blob([JSON.stringify(doc, null, 2)], { type: 'application/json' }));
+  const a = Object.assign(document.createElement('a'), { href: url, download: name });
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  ioNote(t('ioSaved')(name), 'ok');
+}
+
+// accepts anything shaped like a saved document; ids are reassigned so an import
+// can never collide with the ids already in memory
+function importDoc(doc, fileName) {
+  if (!doc || !Array.isArray(doc.stocks) || !doc.stocks.length) throw new Error(t('ioBadFile'));
+  const idMap = new Map();
+  const stocks = doc.stocks.map(st => {
+    const id = newId();
+    idMap.set(st.id, id);
+    return normalizeStock({ ...st, id });
+  });
+  const scenarios = sanitizeScenarios(
+    (Array.isArray(doc.scenarios) ? doc.scenarios : []).map(sc => {
+      const picks = {};
+      Object.entries(sc.picks || {}).forEach(([k, v]) => {
+        const id = idMap.get(Number(k));
+        if (id != null) picks[id] = Number(v);
+      });
+      return { label: sc.label, picks };
+    }), stocks);
+  const weights = {};
+  Object.entries(doc.weights || {}).forEach(([k, v]) => {
+    const id = idMap.get(Number(k));
+    if (id != null) weights[id] = Number(v);
+  });
+  state = {
+    stocks,
+    activeId: idMap.get(doc.activeId) || stocks[0].id,
+    benchId: idMap.get(doc.benchId) || null,
+    mode: doc.mode === 'rel' ? 'rel' : 'abs',
+    label: String(doc.label || '').slice(0, 60),
+    scenarios,
+    weights: sanitizeWeights(weights, stocks),
+    scOpen: !!state.scOpen,
+    pfOpen: state.pfOpen !== false,
+  };
+  rebuild();
+  ioNote(t('ioLoaded')(stocks.length, fileName), 'ok');
+}
+
+function importFile(file) {
+  if (!file) return;
+  file.text()
+    .then(txt => importDoc(JSON.parse(txt), file.name))
+    .catch(err => ioNote(err instanceof SyntaxError ? t('ioBadFile') : err.message, 'err'));
+}
+
+// ── scenario table ───────────────────────────────────────────────────────────
+// numeric input built attributes-first, value last (see below)
+function num(attrs, value) {
+  const el = Object.assign(document.createElement('input'), attrs);
+  el.value = value;
+  return el;
+}
+
+function renderTable() {
+  const tbl = $('stock-tbl');
+  const paths = active().paths;
+  tbl.textContent = '';
+
+  const head = tbl.insertRow();
+  ['', t('colPath'), t('colReturn'), '', t('colProb'), ''].forEach(h => {
+    const th = document.createElement('th');
+    th.textContent = h;
+    head.appendChild(th);
+  });
+
+  paths.forEach((pth, i) => {
+    const tr = tbl.insertRow();
+    const cell = () => tr.insertCell();
+
+    const sw = document.createElement('span');
+    sw.className = 'swatch';
+    sw.style.background = colorForRet(pth.ret);
+    cell().appendChild(sw);
+    cell().textContent = pathName(i);
+
+    // min/max/step must be set before value, or the browser clamps it to the default range
+    const ret = num({ type: 'number', min: RET_MIN, max: RET_MAX, step: 1 }, pth.ret);
+    const retSl = num({ type: 'range', min: POS_MIN, max: POS_MAX, step: 1 }, retToSlider(pth.ret));
+    ret.oninput = () => {
+      pth.ret = clamp(parseFloat(ret.value) || 0, RET_MIN, RET_MAX);
+      retSl.value = retToSlider(pth.ret);
+      sw.style.background = colorForRet(pth.ret);
+      refresh();
+    };
+    retSl.oninput = () => {
+      const v = sliderToRet(parseFloat(retSl.value));
+      pth.ret = clamp(Math.abs(v) < 100 ? Math.round(v * 10) / 10 : Math.round(v), RET_MIN, RET_MAX);
+      ret.value = pth.ret;
+      sw.style.background = colorForRet(pth.ret);
+      refresh();
+    };
+    cell().appendChild(ret);
+    cell().appendChild(retSl);
+
+    const pr = num({ type: 'number', min: 0, max: 1, step: 0.01 }, pth.prob);
+    const prSl = num({ type: 'range', min: 0, max: 1, step: 0.005 }, pth.prob);
+    pr.oninput = () => { pth.prob = clamp(parseFloat(pr.value) || 0, 0, 1); prSl.value = pth.prob; refresh(); };
+    prSl.oninput = () => { pth.prob = parseFloat(prSl.value); pr.value = pth.prob; refresh(); };
+    cell().appendChild(pr);
+    cell().appendChild(prSl);
+  });
+}
+
+// ── portfolio: a weight per stock, cash is the remainder ────────────────────
+function renderPortfolio() {
+  $('pf-chev').textContent = state.pfOpen ? '▾' : '▸';
+  $('pf-body').classList.toggle('hidden', !state.pfOpen);
+  const inv = invested(), cash = 100 - inv;
+  $('pf-note').textContent = cash < 0 ? t('pfNoteLev')(-cash) : t('pfNote')(inv, cash);
+  if (!state.pfOpen) return;
+
+  const tbl = $('pf-tbl');
+  tbl.textContent = '';
+  const head = tbl.insertRow();
+  ['', t('lblStock'), t('colWeight'), ''].forEach(h => {
+    const th = document.createElement('th');
+    th.textContent = h;
+    head.appendChild(th);
+  });
+
+  state.stocks.forEach(st => {
+    const tr = tbl.insertRow();
+    tr.insertCell();
+    tr.insertCell().textContent = st.ticker || '?';
+
+    const w = num({ type: 'number', min: 0, max: 100, step: 1 }, weightOf(st.id));
+    const wSl = num({ type: 'range', min: 0, max: 100, step: 0.5 }, weightOf(st.id));
+    const set = v => {
+      state.weights[st.id] = clamp(v, 0, 100);
+      w.value = state.weights[st.id];
+      wSl.value = state.weights[st.id];
+      renderPortfolio();
+      save();
+    };
+    w.oninput = () => set(parseFloat(w.value) || 0);
+    wSl.oninput = () => set(parseFloat(wSl.value));
+    tr.insertCell().appendChild(w);
+    tr.insertCell().appendChild(wSl);
+  });
+
+  const tr = tbl.insertRow();
+  tr.className = 'cash';
+  tr.insertCell();
+  tr.insertCell().textContent = t('lblCash');
+  const td = tr.insertCell();
+  td.textContent = cash.toFixed(1) + '%';
+  td.style.textAlign = 'right';
+  td.style.paddingRight = '14px';
+  if (cash < 0) td.className = 'neg';
+  tr.insertCell();
+}
+
+// ── scenarios: one row per situation, one column per stock ──────────────────
+function renderScenarios() {
+  $('sc-chev').textContent = state.scOpen ? '▾' : '▸';
+  $('sc-body').classList.toggle('hidden', !state.scOpen);
+  $('sc-count').textContent = state.scenarios.length ? t('scCount')(state.scenarios.length) : '';
+  if (!state.scOpen) return;
+
+  const tbl = $('sc-tbl');
+  tbl.textContent = '';
+  const head = tbl.insertRow();
+  [t('colScenario'), ...state.stocks.map(st => st.ticker || '?'), ''].forEach(h => {
+    const th = document.createElement('th');
+    th.textContent = h;
+    head.appendChild(th);
+  });
+
+  state.scenarios.forEach((sc, si) => {
+    const tr = tbl.insertRow();
+    const lab = Object.assign(document.createElement('input'), { type: 'text', value: sc.label });
+    lab.oninput = () => { sc.label = lab.value; save(); };
+    tr.insertCell().appendChild(lab);
+
+    state.stocks.forEach(st => {
+      const sel = document.createElement('select');
+      st.paths.forEach((pth, i) => {
+        sel.appendChild(new Option(`${pathName(i)} (${fmtPct(pth.ret)})`, String(i)));
+      });
+      sel.value = String(sc.picks[st.id] == null ? BASE_PATH : sc.picks[st.id]);
+      sel.onchange = () => { sc.picks[st.id] = Number(sel.value); save(); };
+      tr.insertCell().appendChild(sel);
+    });
+
+    const del = Object.assign(document.createElement('button'),
+      { className: 'mini-btn', textContent: '×' });
+    del.onclick = () => { state.scenarios.splice(si, 1); renderScenarios(); save(); };
+    tr.insertCell().appendChild(del);
+  });
+}
+
+function addScenario() {
+  const picks = {};
+  state.stocks.forEach(st => { picks[st.id] = BASE_PATH; });
+  state.scenarios.push({ label: `${t('newScenario')} ${state.scenarios.length + 1}`, picks });
+  state.scOpen = true;
+  renderScenarios();
+  save();
+}
+
+function renderSum() {
+  const total = sum(active().paths.filter(p => p.prob > 0).map(p => p.prob));
+  const el = $('stock-sum');
+  const ok = Math.abs(total - 1) < 1e-6;
+  el.textContent = ok ? t('sumOk')(total) : t('sumWarn')(total);
+  el.classList.toggle('warn', !ok);
+}
+
+// ── bar chart ────────────────────────────────────────────────────────────────
+function drawBars() {
+  const cv = $('bar-chart'), ctx = cv.getContext('2d');
+  const padL = 62, padR = 24, padT = 30, padB = 76;
+  const H = cv.height;
+  const setup = width => {
+    cv.width = width;              // assigning width also clears the canvas
+    ctx.font = '12px system-ui, sans-serif';
+    ctx.textBaseline = 'alphabetic';
+  };
+
+  const { stock, bench, rel, bs, rows: cmp } = view();
+  const rows = rel ? cmp : stock;
+
+  if (!rows.length) {
+    setup(padL + LIN_W + padR);
+    ctx.fillStyle = '#999';
+    ctx.textAlign = 'center';
+    ctx.fillText(t('noData'), cv.width / 2, H / 2);
+    return;
+  }
+
+  const showBench = $('show-bench').checked && bench.length > 0 && !rel;
+  const xOf = r => rel ? r.excess : r.ret;
+  const xs = rows.map(xOf).concat(showBench ? bench.map(b => b.ret) : []);
+  const ps = rows.map(r => r.prob).concat(showBench ? bench.map(b => b.prob) : []);
+  // the curves can rise above the tallest bar where bumps overlap — give them room
+  const curveOn = $('show-curve').checked;
+  const showBenchCurve = curveOn && $('show-bench').checked && bench.length > 0 && !rel;
+  const curvePts = rel ? rows.map(r => ({ ret: r.excess, prob: r.prob })) : rows;
+  const pMax = Math.max(...ps) * 1.18;
+
+  // x-axis: plain linear over LIN_LO…LIN_HI at a constant LIN_W pixels. Values
+  // outside the band get a fixed-width slot each, appended past a divider — the
+  // canvas grows instead of the scale changing.
+  const key = v => Math.round(v * 1000) / 1000;
+  const uniqSorted = vs => [...new Set(vs.map(key))].sort((a, b) => a - b);
+  const outLo = uniqSorted(xs.filter(v => v < LIN_LO));
+  const outHi = uniqSorted(xs.filter(v => v > LIN_HI));
+  // the outlier strip is reserved whether or not it is used, so the linear band
+  // keeps the same pixels — and the same scale — across every stock and mode
+  const W = CHART_W;
+  setup(W);
+  const stripR = W * OUT_FRAC;
+  const stripL = outLo.length ? W * OUT_FRAC / 2 : 0;   // only excess return goes < -100
+  const slotR = stripR / Math.max(1, outHi.length);
+  const slotL = stripL / Math.max(1, outLo.length);
+  const xLin0 = padL + stripL;
+  const xLin1 = W - padR - stripR;
+
+  const inLin = v => v >= LIN_LO && v <= LIN_HI;
+  const X = v => {
+    if (v < LIN_LO) return padL + (Math.max(0, outLo.indexOf(key(v))) + 0.5) * slotL;
+    if (v > LIN_HI) {
+      const i = outHi.indexOf(key(v));
+      return xLin1 + ((i < 0 ? outHi.length - 1 : i) + 0.5) * slotR;
+    }
+    return xLin0 + (v - LIN_LO) / (LIN_HI - LIN_LO) * (xLin1 - xLin0);
+  };
+  const Y = p => H - padB - p / pMax * (H - padT - padB);
+
+  // grid + y axis
+  ctx.strokeStyle = '#eee';
+  ctx.fillStyle = '#888';
+  ctx.textAlign = 'right';
+  linearTicks(0, pMax, 5).forEach(p => {
+    const y = Y(p);
+    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
+    ctx.fillText((p * 100).toFixed(0) + '%', padL - 8, y + 4);
+  });
+
+  // x axis + ticks
+  ctx.strokeStyle = C.axis;
+  ctx.beginPath(); ctx.moveTo(padL, Y(0)); ctx.lineTo(W - padR, Y(0)); ctx.stroke();
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#888';
+  const outTicks = (slotL >= 34 ? outLo : []).concat(slotR >= 34 ? outHi : []);
+  linearTicks(LIN_LO, LIN_HI, 6).concat(outTicks).forEach(v => {
+    const x = X(v);
+    ctx.beginPath(); ctx.moveTo(x, Y(0)); ctx.lineTo(x, Y(0) + 4); ctx.stroke();
+    ctx.fillText(v.toFixed(0), x, Y(0) + 16);
+  });
+
+  // dividers marking where the linear band ends and the compressed slots begin
+  ctx.strokeStyle = '#aaa';
+  ctx.setLineDash([2, 3]);
+  [stripL ? xLin0 : null, xLin1].forEach(x => {
+    if (x === null) return;
+    ctx.beginPath(); ctx.moveTo(x, padT - 12); ctx.lineTo(x, Y(0) + 22); ctx.stroke();
+  });
+  ctx.setLineDash([]);
+
+  // zero line
+  {
+    ctx.strokeStyle = C.zero;
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath(); ctx.moveTo(X(0), padT - 12); ctx.lineTo(X(0), Y(0)); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  const bwLin = Math.min(40, Math.max(10, (xLin1 - xLin0) / (rows.length * 2.4)));
+  const bwOf = v => inLin(v) ? bwLin
+    : Math.min(bwLin, (v < LIN_LO ? slotL : slotR) * 0.66);
+
+  // benchmark bars behind (absolute mode only)
+  if (showBench) {
+    bench.forEach(b => {
+      const x = X(b.ret), y = Y(b.prob), w = bwOf(b.ret) * 1.44;
+      ctx.fillStyle = C.benchFill;
+      ctx.strokeStyle = C.bench;
+      ctx.fillRect(x - w / 2, y, w, Y(0) - y);
+      ctx.strokeRect(x - w / 2, y, w, Y(0) - y);
+    });
+  }
+
+  // stock bars
+  const labels = [], placed = [];
+  rows.forEach(r => {
+    const x = X(xOf(r)), y = Y(r.prob), w = bwOf(xOf(r));
+    ctx.fillStyle = colorOf(r);
+    ctx.fillRect(x - w / 2, y, w, Y(0) - y);
+
+    const top = fmtP(r.prob), val = rel ? fmtPP(r.excess) : fmtPct(r.ret);
+    const half = Math.max(ctx.measureText(top).width, ctx.measureText(val).width) / 2 + 3;
+    let ly = y - 4;
+    while (placed.some(b => ly > b.y - 22 && ly < b.y + 22 && x + half > b.x0 && x - half < b.x1))
+      ly -= 22;
+    placed.push({ x0: x - half, x1: x + half, y: ly });
+
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#333';
+    ctx.fillText(top, x, ly - 12);
+    ctx.fillStyle = '#666';
+    ctx.fillText(val, x, ly);
+    labels.push({ x, text: r.label });
+  });
+
+  // scenario labels stagger onto a second line where they would collide
+  ctx.fillStyle = '#222';
+  ctx.textAlign = 'center';
+  const rowEnd = [-Infinity, -Infinity, -Infinity];
+  labels.forEach(l => {
+    const half = ctx.measureText(l.text).width / 2 + 3;
+    let row = rowEnd.findIndex(end => l.x - half >= end);
+    if (row < 0) row = 0;
+    rowEnd[row] = l.x + half;
+    ctx.fillText(l.text, l.x, Y(0) + 32 + row * 13);
+  });
+
+  // smooth curves over the linear band (the compressed strip has no usable scale)
+  if (curveOn) {
+    const vAt = px => LIN_LO + (px - xLin0) / (xLin1 - xLin0) * (LIN_HI - LIN_LO);
+    const drawCurve = (pts, color, width) => {
+      if (pts.length < 2) return;
+      const c = buildCurve(pts);
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(xLin0, padT - 12, xLin1 - xLin0, Y(0) - padT + 12);
+      ctx.clip();
+      ctx.beginPath();
+      for (let px = xLin0; px <= xLin1; px += 2) {
+        const y = Y(curveAt(c, vAt(px)));
+        px === xLin0 ? ctx.moveTo(px, y) : ctx.lineTo(px, y);
+      }
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.stroke();
+      ctx.restore();
+      ctx.lineWidth = 1;
+    };
+    if (showBenchCurve) drawCurve(bench, C.bench, 1);
+    drawCurve(curvePts, '#444', 1.8);
+  }
+
+  // expected value markers — benchmark first, so the stock's line draws on top
+  if ($('show-ev').checked) {
+    const marker = (v, color, label, ty) => {
+      if (!isFinite(v)) return;
+      if (!inLin(v)) {   // off the linear band — show the value, but no misplaced line
+        ctx.fillStyle = color;
+        ctx.textAlign = 'right';
+        ctx.fillText(label + (v > LIN_HI ? ' ▸' : ' ◂'), W - padR, ty);
+        return;
+      }
+      ctx.strokeStyle = color;
+      ctx.setLineDash([5, 3]);
+      ctx.beginPath(); ctx.moveTo(X(v), padT - 12); ctx.lineTo(X(v), Y(0)); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = color;
+      ctx.textAlign = 'left';
+      ctx.fillText(label, X(v) + 4, ty);
+    };
+    if (showBench) {
+      const bev = sum(bench.map(b => b.prob * b.ret));
+      marker(bev, C.bench, 'Eb = ' + fmtPct(bev), padT - 2);
+    }
+    const ev = sum(rows.map(r => r.prob * xOf(r)));
+    marker(ev, C.ev, 'E = ' + (rel ? fmtPP(ev) : fmtPct(ev)), padT - 14);
+  }
+
+  // axis labels
+  ctx.fillStyle = '#666';
+  ctx.textAlign = 'center';
+  ctx.fillText(rel ? t('axisExcess') : t('axisReturn'), (padL + W - padR) / 2, H - 8);
+  ctx.save();
+  ctx.translate(14, (padT + H - padB) / 2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.fillText(t('axisProb'), 0, 0);
+  ctx.restore();
+
+  // legend for the benchmark overlay / the plotted stock
+  ctx.textAlign = 'left';
+  let lx = padL;
+  ctx.fillStyle = '#222';
+  ctx.fillText(active().ticker, lx, 19);
+  if (showBench) {
+    lx += 14 + ctx.measureText(active().ticker).width;
+    ctx.fillStyle = C.benchFill;
+    ctx.fillRect(lx, 10, 12, 10);
+    ctx.strokeStyle = C.bench;
+    ctx.strokeRect(lx, 10, 12, 10);
+    ctx.fillStyle = '#666';
+    ctx.fillText(bs.ticker, lx + 18, 19);
+  }
+}
+
+// ── pie chart ────────────────────────────────────────────────────────────────
+function drawPie() {
+  const cv = $('pie-chart'), ctx = cv.getContext('2d');
+  const W = cv.width, H = cv.height;
+  ctx.clearRect(0, 0, W, H);
+  ctx.font = '12px system-ui, sans-serif';
+
+  const { stock, rel, bs, rows: cmp } = view();
+  const rows = rel ? cmp : stock;
+
+  ctx.fillStyle = '#444';
+  ctx.textAlign = 'left';
+  ctx.fillText(rel ? t('pieTitleRel')(active().ticker, bs.ticker)
+                   : t('pieTitleAbs')(active().ticker), 20, 20);
+
+  if (!rows.length) {
+    ctx.fillStyle = '#999';
+    ctx.textAlign = 'center';
+    ctx.fillText(t('noData'), W / 2, H / 2);
+    return;
+  }
+
+  const cx = 220, cy = H / 2 + 10, R = Math.min(120, H / 2 - 30);
+  let a0 = -Math.PI / 2;
+  rows.forEach(r => {
+    const a1 = a0 + r.prob * Math.PI * 2;
+    ctx.fillStyle = colorOf(r);
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, R, a0, a1);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    if (r.prob > 0.05) {
+      const am = (a0 + a1) / 2;
+      ctx.fillStyle = textOnRet(r.ret);
+      ctx.textAlign = 'center';
+      ctx.fillText(fmtP(r.prob), cx + Math.cos(am) * R * 0.62, cy + Math.sin(am) * R * 0.62 + 4);
+    }
+    a0 = a1;
+  });
+  ctx.lineWidth = 1;
+
+  // legend
+  let ly = cy - rows.length * 11 + 6;
+  const lx = 400;
+  ctx.textAlign = 'left';
+  rows.forEach(r => {
+    ctx.fillStyle = colorOf(r);
+    ctx.fillRect(lx, ly - 9, 11, 11);
+    ctx.fillStyle = '#222';
+    ctx.fillText(r.label, lx + 18, ly);
+    ctx.fillStyle = '#666';
+    const val = rel ? `${fmtP(r.prob)}  ·  ${fmtPP(r.excess)} ${t('vsBench')} (${fmtPct(r.ret)})`
+                    : `${fmtP(r.prob)}  ·  ${fmtPct(r.ret)}`;
+    ctx.fillText(val, lx + 150, ly);
+    ly += 22;
+  });
+}
+
+// ── stats ────────────────────────────────────────────────────────────────────
+function renderStats() {
+  const el = $('stats');
+  const { stock, bench, rows } = view();
+  el.textContent = '';
+  if (!stock.length) return;
+
+  const st = stats(stock);
+  const bs = bench.length ? stats(bench) : null;
+
+  const line = (k, v) => `<b>${k}:</b> ${v}`;
+  const parts = [
+    line(t('stExp'), fmtPct(st.mean)),
+    line(t('stSd'), st.sd.toFixed(1) + ' pp'),
+    line(t('stLoss'), fmtP(st.pLoss)),
+    line(t('stGain'), fmtP(st.pGain)),
+  ];
+  if (bs) {
+    parts.push(line(t('stBenchExp'), fmtPct(bs.mean)));
+    parts.push(line(t('stExcess'), fmtPP(sum(rows.map(r => r.prob * r.excess))) + ' pp'));
+    parts.push(line(t('stBeat'), fmtP(sum(rows.map(r => r.prob * r.beat)))));
+  }
+
+  const head = document.createElement('div');
+  head.innerHTML = parts.join(' &nbsp;·&nbsp; ');
+  el.appendChild(head);
+
+  const tbl = document.createElement('table');
+  const cols = bs
+    ? [t('thScenario'), t('thRet'), t('thProb'), t('thBenchQ'), t('thExcess'), t('thBenchP'), t('thBeat')]
+    : [t('thScenario'), t('thRet'), t('thProb')];
+  const hr = tbl.insertRow();
+  cols.forEach(c => { const th = document.createElement('th'); th.textContent = c; hr.appendChild(th); });
+
+  rows.forEach(r => {
+    const tr = tbl.insertRow();
+    const cells = bs
+      ? [r.label, fmtPct(r.ret), r.prob.toFixed(3), fmtPct(r.benchRet),
+         fmtPP(r.excess) + ' pp', r.benchP.toFixed(3), fmtP(r.beat)]
+      : [r.label, fmtPct(r.ret), r.prob.toFixed(3)];
+    cells.forEach(c => { tr.insertCell().textContent = c; });
+  });
+
+  const tr = tbl.insertRow();
+  tr.className = 'tot';
+  const totals = bs
+    ? [t('total'), fmtPct(st.mean), '1.000',
+       fmtPct(sum(rows.map(r => r.prob * r.benchRet))),
+       fmtPP(sum(rows.map(r => r.prob * r.excess))) + ' pp', '—',
+       fmtP(sum(rows.map(r => r.prob * r.beat)))]
+    : [t('total'), fmtPct(st.mean), '1.000'];
+  totals.forEach(c => { tr.insertCell().textContent = c; });
+
+  el.appendChild(tbl);
+}
+
+// ── refresh ──────────────────────────────────────────────────────────────────
+function refresh() {
+  active().ticker = $('ticker').value;
+  state.label = $('save-label').value;
+  const bs = benchStock();
+  renderStockBtns();
+  renderSum();
+  renderPortfolio();
+  renderScenarios();
+  $('mode-annot').textContent = state.mode !== 'rel' ? t('modeAnnotAbs')
+    : bs ? t('modeAnnotRel')(bs.ticker) : t('modeAnnotNoBench');
+  $('show-bench').closest('label').classList.toggle('hidden', state.mode === 'rel' || !bs);
+  drawBars();
+  drawPie();
+  renderStats();
+  save();
+}
+
+function rebuild() {
+  applyI18n();
+  $('ticker').value = active().ticker;
+  $('save-label').value = state.label || '';
+  $('mode-btns').querySelectorAll('button').forEach(b =>
+    b.classList.toggle('active', b.dataset.val === state.mode));
+  renderBenchSel();
+  renderTable();
+  renderPortfolio();
+  renderScenarios();
+  refresh();
+}
+
+// ── wiring ───────────────────────────────────────────────────────────────────
+load();
+$('add-stock').onclick = addStock;
+$('reset-btn').onclick = () => {
+  if (!confirm(t('resetConfirm'))) return;
+  state = defaultState();
+  rebuild();
+};
+$('del-stock').onclick = delStock;
+$('add-scenario').onclick = addScenario;
+$('sc-head').onclick = () => { state.scOpen = !state.scOpen; renderScenarios(); save(); };
+$('pf-head').onclick = () => { state.pfOpen = !state.pfOpen; renderPortfolio(); save(); };
+$('ticker').oninput = () => { refresh(); renderBenchSel(); };
+$('bench-sel').onchange = () => {
+  state.benchId = $('bench-sel').value ? Number($('bench-sel').value) : null;
+  refresh();
+};
+$('save-file').onclick = exportFile;
+$('load-file').onclick = () => $('file-input').click();
+$('file-input').onchange = e => { importFile(e.target.files[0]); e.target.value = ''; };
+
+// drop a .json anywhere on the page to load it
+let dragDepth = 0;
+document.addEventListener('dragenter', e => {
+  e.preventDefault();
+  if (++dragDepth === 1) document.body.classList.add('dragging');
+});
+document.addEventListener('dragover', e => e.preventDefault());
+document.addEventListener('dragleave', () => {
+  if (--dragDepth <= 0) { dragDepth = 0; document.body.classList.remove('dragging'); }
+});
+document.addEventListener('drop', e => {
+  e.preventDefault();
+  dragDepth = 0;
+  document.body.classList.remove('dragging');
+  importFile(e.dataTransfer.files[0]);
+});
+
+$('show-bench').onchange = refresh;
+$('show-ev').onchange = refresh;
+$('show-curve').onchange = refresh;
+
+$('mode-btns').querySelectorAll('button').forEach(btn => {
+  btn.onclick = () => {
+    state.mode = btn.dataset.val;
+    $('mode-btns').querySelectorAll('button').forEach(b => b.classList.toggle('active', b === btn));
+    refresh();
+  };
+});
+
+$('lang-btns').querySelectorAll('button').forEach(btn => {
+  btn.onclick = () => {
+    lang = btn.dataset.val;
+    localStorage.setItem('kellyLang', lang);
+    rebuild();
+  };
+});
+
+rebuild();
+</script>
+</body>
+</html>
